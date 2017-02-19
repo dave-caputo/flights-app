@@ -13,6 +13,7 @@ pyparsing==2.1.10
 pytz==2016.10
 requests==2.13.0
 six==1.10.0
+suds-jurko==0.6
 Unidecode==0.4.20
 wagtail==1.8.1
 webencodings==0.5
