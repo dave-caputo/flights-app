@@ -1,11 +1,63 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block body_class %}template-homepage{% endblock %}
 
 {% block content %}
-    <h1>Welcome to your new Wagtail site!</h1>
 
-    <p>You can access the admin interface <a href="{% url 'wagtailadmin_home' %}">here</a> (make sure you have run "./manage.py createsuperuser" in the console first).</p>
+<nav class="navbar navbar-default navbar-fixed-top flights-navbar">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <p class="navbar-brand flights-nav-item">Flight Information</p>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li class="flights-nav-item"><a href="">About</a></li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
 
-    <p>If you haven't already given the documentation a read, head over to <a href="http://docs.wagtail.io/">http://docs.wagtail.io</a> to start building on Wagtail</p>
+  <div class="container flights-header-bg">
+
+    <div class="flights-header">
+      <h1 class="flights-title">Flights Now</h1>
+      <p class="lead flights-description">Flights enroute, landed, departed, and scheduled for your nearby airports.</p>
+    </div>
+
+    <div class="flights-body flights-main">
+      <h3>Enroute</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Flight</th>
+            <th>Airline</th>
+            <th>Orgin</th>
+            <th>Expected time</th>
+            <th>Landing airport</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for course in courses %}
+            <tr>
+              <td class="flight_flight"></td>
+              <td class="flight_airline"></td>
+              <td class="flight_origin"></td>
+              <td class="flight_time"></td>
+              <td class="flight_airport"></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>   
+    </div>
+
+  </div>
+
 {% endblock %}
