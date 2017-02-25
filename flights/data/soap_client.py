@@ -4,11 +4,11 @@ from suds import null, WebFault
 from suds.client import Client
 import logging
 
-from django.conf.settings import FLIGHTS_KEY
+from django.conf import settings
 
 
 username = 'davecaputo'
-apiKey = FLIGHTS_KEY
+apiKey = settings.FLIGHTS_KEY
 url = 'http://flightxml.flightaware.com/soap/FlightXML2/wsdl'
 
 

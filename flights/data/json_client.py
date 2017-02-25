@@ -1,10 +1,8 @@
 import requests
 from requests.auth import HTTPBasicAuth
 
-from django.conf.settings import FLIGHTS_KEY
+from django.conf import settings
 
-username = 'davecaputo'
-password = FLIGHTS_KEY
 
 # EGLL: Heathrow
 # EGKK: Gatwick
@@ -12,10 +10,20 @@ password = FLIGHTS_KEY
 # EGLC: London City
 # EGGW: Luton
 
-flights_url = 'http://flightxml.flightaware.com/json/FlightXML2/'
-params = {'airport': 'EGKK', 'howMany': 15, 'filter': '', 'offset': 0}
-auth = HTTPBasicAuth(username, password)
-r = requests.get(flights_url + 'Enroute', params=params, auth=auth)
 
-with open('tests/enroute.json', 'w') as f:
-    f.write(r.text)
+class FlightClient:
+    url = 'http://flightxml.flightaware.com/json/FlightXML2/'
+    username = 'davecaputo'
+    password = settings.FLIGHTS_KEY
+    auth = HTTPBasicAuth(username, password)
+
+    def __init__(self, operation, params=None):
+        self.request = requests.get(
+            self.url + operation, params=params, auth=self.auth)
+
+    def build_test_files(self, operation):
+        with open('data/tests/enroute.txt', 'w') as f1:
+            f1.write(self.request.text)
+
+        with open('data/enroute_test.py', 'w') as f2:
+            f2.write(str(self.request.json()))
