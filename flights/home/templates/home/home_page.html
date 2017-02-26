@@ -37,21 +37,19 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Flight</th>
-            <th>Airline</th>
-            <th>Orgin</th>
-            <th>Expected time</th>
-            <th>Landing airport</th>
+            <th class="ident">Flight</th>
+            <th class="origincity">From</th>
+            <th class="destination">Destination</th>
+            <th class="estimatedarrivaltime">Estimated Arrival Time</th>
           </tr>
         </thead>
         <tbody>
-          {% for course in courses %}
+          {% for flight in enroute %}
             <tr>
-              <td class="flight_flight"></td>
-              <td class="flight_airline"></td>
-              <td class="flight_origin"></td>
-              <td class="flight_time"></td>
-              <td class="flight_airport"></td>
+              <td class="ident">{{ flight.ident }}</td>
+              <td class="origincity">{{ flight.originCity }}</td>
+              <td class="destination">{{ flight.destination }}</td>
+              <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime }}</td>
             </tr>
           {% endfor %}
         </tbody>
