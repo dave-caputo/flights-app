@@ -3,12 +3,21 @@ from requests.auth import HTTPBasicAuth
 
 from django.conf import settings
 
+from data import enroute_test
+from data.serializer import EnrouteSerializer
+
+
 
 # EGLL: Heathrow
 # EGKK: Gatwick
 # EGSS: Stansted
 # EGLC: London City
 # EGGW: Luton
+
+TEST_FILE_MAPPING = {
+    'Enroute': {'file' : enroute_test,
+                'position': ('EnrouteResult', 'enroute')},
+}
 
 
 class FlightClient:
@@ -17,9 +26,32 @@ class FlightClient:
     password = settings.FLIGHTS_KEY
     auth = HTTPBasicAuth(username, password)
 
-    def __init__(self, operation, params=None):
-        self.request = requests.get(
+    def __init__(self):
+        self.request = {}
+
+    def get_live_request(self, operation, params=None):
+        '''Make request to FlightAware live flight data.'''
+        r = requests.get(
             self.url + operation, params=params, auth=self.auth)
+        self.request = r.json()
+        return self.request
+
+    def get_test_request(self, operation):
+        '''
+        Make request to an existing local test file using a mapping 
+        dict to find the flight data.
+        '''
+
+        target = TEST_FILE_MAPPING[operation]
+        file = target['file']
+        pos1, pos2 = target['position']
+        self.request = file.flights[pos1][pos2]
+        return self.request
+
+    def save(self):
+        serializer = EnrouteSerializer(data=self.request, many=True)
+        if serializer.is_valid():
+            serializer.save()
 
     def build_test_files(self, operation):
         with open('data/tests/enroute.txt', 'w') as f1:
@@ -27,3 +59,4 @@ class FlightClient:
 
         with open('data/enroute_test.py', 'w') as f2:
             f2.write(str(self.request.json()))
+

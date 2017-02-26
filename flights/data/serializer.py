@@ -10,4 +10,3 @@ class EnrouteSerializer(serializers.ModelSerializer):
             'estimatedarrivaltime', 'filed_departuretime','origin',
             'destination', 'originName', 'originCity',
             'destinationName', 'destinationCity')
-        # exclude = ('id',)
