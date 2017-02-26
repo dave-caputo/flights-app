@@ -59,8 +59,7 @@ class FlightClientTest(TestCase):
         self.assertEqual(Enroute.objects.count(), 15)
         self.assertEqual(Enroute.objects.filter(ident='HVN55').count(), 3)
 
-    """
-    def test_json_client_makes_a_test_enroute_request(self):
+    def test_json_client_makes_a_live_enroute_request(self):
         '''
         Request data is obtained from file server. Use with caution to
         avoid unnecessary costs.
@@ -70,8 +69,4 @@ class FlightClientTest(TestCase):
         client = FlightClient()
         client.get_live_request('Enroute', params)
         client.save()
-        self.assertEqual(Enroute.objects.count(), 15)
-
-
-    def test_json_client_saves_enroute_objects_to_database(self):
-    """
+        self.assertEqual(Enroute.objects.count(), 10)

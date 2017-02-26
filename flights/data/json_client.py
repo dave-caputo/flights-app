@@ -2,6 +2,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from django.conf import settings
+from django.core.cache import cache
 
 from data import enroute_test
 from data.serializer import EnrouteSerializer
@@ -14,8 +15,8 @@ from data.serializer import EnrouteSerializer
 # EGLC: London City
 # EGGW: Luton
 
-TEST_FILE_MAPPING = {
-    'Enroute': {'file' : enroute_test,
+OPERATION_MAPPING = {
+    'Enroute': {'test_file' : enroute_test,
                 'position': ('EnrouteResult', 'enroute')},
 }
 
@@ -31,9 +32,16 @@ class FlightClient:
 
     def get_live_request(self, operation, params=None):
         '''Make request to FlightAware live flight data.'''
+        target = OPERATION_MAPPING[operation]
+        pos1, pos2 = target['position']
+        
         r = requests.get(
             self.url + operation, params=params, auth=self.auth)
-        self.request = r.json()
+        r = r.json()
+        r = r[pos1][pos2]
+        
+        self.request = r
+        cache.set(operation, self.request, None)
         return self.request
 
     def get_test_request(self, operation):
@@ -42,8 +50,8 @@ class FlightClient:
         dict to find the flight data.
         '''
 
-        target = TEST_FILE_MAPPING[operation]
-        file = target['file']
+        target = OPERATION_MAPPING[operation]
+        file = target['test_file']
         pos1, pos2 = target['position']
         self.request = file.flights[pos1][pos2]
         return self.request

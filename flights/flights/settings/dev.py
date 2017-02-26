@@ -16,7 +16,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 FLIGHTS_KEY = os.environ.get('flights_KEY')
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -24,6 +23,13 @@ DATABASES = {
         'USER': 'davecaputo',
         'PASSWORD': os.environ.get('mysql_PW'),
         'HOST': 'localhost',
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/var/tmp/django_cache',
     }
 }
 
