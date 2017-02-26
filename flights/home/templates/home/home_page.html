@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load data_extras %}
 
 {% block body_class %}template-homepage{% endblock %}
 
@@ -49,7 +50,7 @@
               <td class="ident">{{ flight.ident }}</td>
               <td class="origincity">{{ flight.originCity }}</td>
               <td class="destination">{{ flight.destination }}</td>
-              <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime }}</td>
+              <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime|dformat }}</td>
             </tr>
           {% endfor %}
         </tbody>
