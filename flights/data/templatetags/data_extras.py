@@ -13,10 +13,12 @@ from data.airports import AIRPORTS
 
 register = template.Library()
 
+
 @register.filter(name='dformat')
 def dformat(value):
     return datetime.datetime.fromtimestamp(
         int(value)).strftime('%a %d %b, %H:%M')
+
 
 @register.filter(name='airline')
 def airline(value):
@@ -24,6 +26,7 @@ def airline(value):
     for airline in AIRLINES:
         if v in airline.values():
             return airline['Short Name']
+
 
 @register.filter(name='location')
 def location(value):

@@ -8,9 +8,10 @@ from data import enroute_test
 from data.serializer import EnrouteSerializer
 
 OPERATION_MAPPING = {
-    'Enroute': {'test_file' : enroute_test,
+    'Enroute': {'test_file': enroute_test,
                 'position': ('EnrouteResult', 'enroute')},
 }
+
 
 class FlightClient:
     url = 'http://flightxml.flightaware.com/json/FlightXML2/'
@@ -21,7 +22,7 @@ class FlightClient:
     def __init__(self):
         self.request = {}
 
-    def get_live_request(self, operation, params=None):
+    def get_live_request(self, operation, params):
         target = OPERATION_MAPPING[operation]
         pos1, pos2 = target['position']
         r = requests.get(
@@ -33,10 +34,9 @@ class FlightClient:
         return self.request
 
     def get_test_request(self, operation):
-        target = OPERATION_MAPPING[operation]
-        file = target['test_file']
-        pos1, pos2 = target['position']
-        self.request = file.flights[pos1][pos2]
+        mapping = {'Enroute': enroute_test, }
+        file = mapping[operation]
+        self.request = file.flights[operation + 'Result'][operation.lower()]
         return self.request
 
     def save(self):
