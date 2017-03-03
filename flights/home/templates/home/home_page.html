@@ -34,11 +34,12 @@
     </div>
 
     <div class="flights-body flights-main">
-      <h3>Enroute</h3>
+      <h3>Scheduled arrivals</h3>
       <table class="table">
         <thead>
           <tr>
             <th class="ident">Flight</th>
+            <th class="airline">Airline</th>
             <th class="origincity">From</th>
             <th class="destination">Destination</th>
             <th class="estimatedarrivaltime">Estimated Arrival Time</th>
@@ -48,8 +49,9 @@
           {% for flight in enroute %}
             <tr>
               <td class="ident">{{ flight.ident }}</td>
-              <td class="origincity">{{ flight.originCity }}</td>
-              <td class="destination">{{ flight.destination }}</td>
+              <td class="airline">{{ flight.ident|airline }}</td>
+              <td class="origincity">{{ flight.origin|location }}</td>
+              <td class="destination">{{ flight.destinationName }}</td>
               <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime|dformat }}</td>
             </tr>
           {% endfor %}
