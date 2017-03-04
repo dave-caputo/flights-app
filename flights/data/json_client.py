@@ -1,16 +1,10 @@
+import importlib
 import requests
 from requests.auth import HTTPBasicAuth
 
 from django.conf import settings
-from django.core.cache import cache
-
-from data import enroute_test
+from data.decorators import cache_operation, crop_request
 from data.serializer import EnrouteSerializer
-
-OPERATION_MAPPING = {
-    'Enroute': {'test_file': enroute_test,
-                'position': ('EnrouteResult', 'enroute')},
-}
 
 
 class FlightClient:
@@ -19,24 +13,22 @@ class FlightClient:
     password = settings.FLIGHTS_KEY
     auth = HTTPBasicAuth(username, password)
 
-    def __init__(self):
-        self.request = {}
-
+    @cache_operation
+    @crop_request
     def get_live_request(self, operation, params):
-        target = OPERATION_MAPPING[operation]
-        pos1, pos2 = target['position']
-        r = requests.get(
-            self.url + operation, params=params, auth=self.auth)
-        r = r.json()
-        r = r[pos1][pos2]
-        self.request = r
-        cache.set(operation, self.request, None)
-        return self.request
+        try:
+            r = requests.get(
+                self.url + operation, params=params, auth=self.auth)
+            self.request = r.json()
+            return self.request
+        except:
+            return 'Live request failed'
 
+    @crop_request
     def get_test_request(self, operation):
-        mapping = {'Enroute': enroute_test, }
-        file = mapping[operation]
-        self.request = file.flights[operation + 'Result'][operation.lower()]
+        test_file_name = 'data.{}_test'.format(operation.lower())
+        test_file = importlib.import_module(test_file_name)
+        self.request = test_file.flights
         return self.request
 
     def save(self):
@@ -50,4 +42,3 @@ class FlightClient:
 
         with open('data/enroute_test.py', 'w') as f2:
             f2.write(str(self.request.json()))
-
