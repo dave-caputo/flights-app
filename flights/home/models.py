@@ -17,5 +17,5 @@ class HomePage(Page):
             c = cache.get('enroute_{}'.format(a), 'Not found')
             flights += c
 
-        context['enroute'] = flights
+        context['enroute'] = sorted(flights, key=lambda k: k['estimatedarrivaltime'])
         return context
