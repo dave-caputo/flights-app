@@ -64,7 +64,7 @@ class FlightClientTest(TestCase):
         Request data is obtained from file server. Use with caution to
         avoid unnecessary costs.
         '''
-        params = {'airport': 'EGLL', 'howMany': 15, 'filter': 'airline', 'offset': 0}
+        params = {'airport': 'EGKK', 'howMany': 15, 'filter': 'airline', 'offset': 15}
         
         client = FlightClient()
         client.get_live_request('Enroute', params)

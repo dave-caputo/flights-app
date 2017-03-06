@@ -7,8 +7,8 @@ from wagtail.wagtailcore.models import Page
 
 
 class HomePage(Page):
-    
+
     def get_context(self, request):
         context = super().get_context(request)
-        context['enroute'] = cache.get('Enroute', 'Not found')
+        context['enroute'] = cache.get('enroute_EGKK', 'Not found')
         return context

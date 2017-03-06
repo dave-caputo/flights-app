@@ -1,6 +1,7 @@
 AIRLINES = [
 {"ICAO Code": "N/A", "Active": "Y", "Name": "Unknown", "Country": "\\N", "IATA Code": "-", "Short Name": "\\N"},
 {"ICAO Code": "N/A", "Active": "Y", "Name": "Private flight", "Country": "", "IATA Code": "-", "Short Name": ""},
+{"ICAO Code": "IBK", "Active": "Y", "Name": "Norwegian Air International", "Country": "Norway", "IATA Code": "D8", "Short Name": "Norwegian"},
 {"ICAO Code": "RNX", "Active": "Y", "Name": "1Time Airline", "Country": "South Africa", "IATA Code": "1T", "Short Name": "Nextime"},
 {"ICAO Code": "MLA", "Active": "Y", "Name": "40-Mile Air", "Country": "United States", "IATA Code": "Q5", "Short Name": "Mile-Air"},
 {"ICAO Code": "AAA", "Active": "Y", "Name": "Ansett Australia", "Country": "Australia", "IATA Code": "AN", "Short Name": "Ansett"},
