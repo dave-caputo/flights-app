@@ -1,5 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
+from datetime import datetime, timedelta
+
 from django.db import models
 from django.core.cache import cache
 
@@ -11,11 +13,21 @@ class HomePage(Page):
     def get_context(self, request):
         context = super().get_context(request)
 
-        flights = []
+        all_flights = []
         airports = ('EGLL', 'EGKK')
         for a in airports:
             c = cache.get('enroute_{}'.format(a), 'Not found')
-            flights += c
+            all_flights += c
 
-        context['enroute'] = sorted(flights, key=lambda k: k['estimatedarrivaltime'])
+        all_flights = sorted(all_flights,
+                             key=lambda k: k['estimatedarrivaltime'])
+
+        now = datetime.now()
+        somedaysago = now - timedelta(days=3)
+
+        current_flights = []
+        for f in all_flights:
+            if f['estimatedarrivaltime'] >= int(somedaysago.timestamp()):
+                current_flights.append(f)
+        context['enroute'] = current_flights
         return context
