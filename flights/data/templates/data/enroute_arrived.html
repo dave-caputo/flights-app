@@ -14,10 +14,10 @@
       <tr>
         <th class="ident">Flight</th>
         <th class="airline">Airline</th>
-        <th class="origincity">From</th>
+        <th class="origincity">Origin</th>
         <th class="destination">Destination</th>
-        <th class="estimatedarrivaltime">Estimated Arrival</th>
-        <th class="actualarrivaltime">Actual Arrival</th>
+        <th class="flightstatus">Status</th>
+        <th class="timesort">Arrival Time</th>
       </tr>
     </thead>
     <tbody>
@@ -27,8 +27,14 @@
           <td class="airline">{{ flight.ident|airline }}</td>
           <td class="origincity">{{ flight.origin|location }}</td>
           <td class="destination">{{ flight.destinationName }}</td>
-          <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime|dformat }}</td>
-          <td class="actualarrivaltime">{{ flight.actualarrivaltime|dformat }}</td>
+          <td class="status">
+            {% if flight.estimatedarrivaltime %}
+              Estimated
+            {% else %}
+              Landed
+            {% endif %}
+          </td>
+          <td class="timesort">{{ flight.timesort|dformat }}</td>
         </tr>
       {% endfor %}
     </tbody>
