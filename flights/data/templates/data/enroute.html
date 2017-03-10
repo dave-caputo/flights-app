@@ -1,8 +1,34 @@
-<html>
-<h1>This is the Enroute Flight Page</h1>
+{% extends "home/home_page.html" %}
 
-{% for flight in enroute %}
-  <p>{{ flight.ident }}</p>
-{% endfor %}
+{% load data_extras %}
+{% load wagtailcore_tags %}
 
-</html>
+{% block flight_type %}
+  <h3>Scheduled arrivals</h3>
+  <a href="/"><p>Back</p></a>
+{% endblock %}
+
+{% block flights_list %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="ident">Flight</th>
+        <th class="airline">Airline</th>
+        <th class="origincity">From</th>
+        <th class="destination">Destination</th>
+        <th class="estimatedarrivaltime">Estimated Arrival Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for flight in enroute %}
+        <tr>
+          <td class="ident">{{ flight.ident }}</td>
+          <td class="airline">{{ flight.ident|airline }}</td>
+          <td class="origincity">{{ flight.origin|location }}</td>
+          <td class="destination">{{ flight.destinationName }}</td>
+          <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime|dformat }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>   
+{% endblock %}
