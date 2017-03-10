@@ -26,7 +26,7 @@
           <td class="airline">{{ flight.ident|airline }}</td>
           <td class="origincity">{{ flight.origin|location }}</td>
           <td class="destination">{{ flight.destinationName }}</td>
-          <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime|dformat }}</td>
+          <td class="estimatedarrivaltime">{{ flight.actualarrivaltime|dformat }}</td>
         </tr>
       {% endfor %}
     </tbody>

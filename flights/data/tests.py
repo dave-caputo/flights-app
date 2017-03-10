@@ -42,12 +42,18 @@ class EnrouteModelTest(TestCase):
         self.assertEqual(Enroute.objects.count(), 10)
     """
 class FlightClientTest(TestCase):
-
+    """
     def test_json_client_makes_a_test_enroute_request(self):
         client = FlightClient()
         client.get_test_request('Enroute')
         self.assertEqual(len(client.request), 15)
 
+    def test_json_client_makes_a_test_data_request(self):
+        client = FlightClient()
+        client.get_test_request('Enroute')
+        self.assertEqual(len(client.request), 15)
+
+    
     def test_json_client_saves_enroute_objects_to_database(self):
         '''
         Request data is obtained from test file. Use to avoid cost of 
@@ -58,7 +64,7 @@ class FlightClientTest(TestCase):
         client.save()
         self.assertEqual(Enroute.objects.count(), 15)
         self.assertEqual(Enroute.objects.filter(ident='HVN55').count(), 3)
-
+    
     def test_json_client_makes_a_live_enroute_request(self):
         '''
         Request data is obtained from file server. Use with caution to
@@ -70,3 +76,15 @@ class FlightClientTest(TestCase):
         client.get_live_request('Enroute', params)
         client.save()
         self.assertEqual(Enroute.objects.count(), 10)
+    """
+    def test_json_client_makes_a_live_arrived_request(self):
+        '''
+        Request data is obtained from file server. Use with caution to
+        avoid unnecessary costs.
+        '''
+        params = {'airport': 'EGKK', 'howMany': 15, 'filter': 'airline', 'offset': 15}
+        
+        client = FlightClient()
+        client.get_live_request('Arrived', params)
+        # client.save()
+        # self.assertEqual(Enroute.objects.count(), 10)

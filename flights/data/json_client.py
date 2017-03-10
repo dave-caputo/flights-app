@@ -20,6 +20,7 @@ class FlightClient:
             r = requests.get(
                 self.url + operation, params=params, auth=self.auth)
             self.request = r.json()
+            print(self.request)
             return self.request
         except:
             return 'Live request failed'
@@ -31,6 +32,7 @@ class FlightClient:
         self.request = test_file.flights
         return self.request
 
+    '''
     def save(self):
         serializer = EnrouteSerializer(data=self.request, many=True)
         if serializer.is_valid():
@@ -42,3 +44,4 @@ class FlightClient:
 
         with open('data/enroute_test.py', 'w') as f2:
             f2.write(str(self.request.json()))
+    '''

@@ -4,8 +4,10 @@ from django.core.cache import cache
 def crop_request(func):
     def wrapper(self, operation, *args, **kwargs):
         r = func(self, operation, *args, **kwargs)
+
+        mapping = {'Enroute': 'enroute', 'Arrived': 'arrivals', }
         try:
-            r = r[operation + 'Result'][operation.lower()]
+            r = r[operation + 'Result'][mapping[operation]]
             self.data = r
             return r
         except:

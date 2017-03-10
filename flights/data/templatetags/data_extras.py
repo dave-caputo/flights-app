@@ -16,9 +16,11 @@ register = template.Library()
 
 @register.filter(name='dformat')
 def dformat(value):
-    return datetime.datetime.fromtimestamp(
-        int(value)).strftime('%a %d %b, %H:%M')
-
+    try: 
+        return datetime.datetime.fromtimestamp(
+            int(value)).strftime('%a %d %b, %H:%M')
+    except:
+        return value
 
 @register.filter(name='airline')
 def airline(value):
