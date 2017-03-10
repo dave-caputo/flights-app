@@ -42,3 +42,14 @@ def get_enroute_arrived_flights():
             f.get('actualarrivaltime', 0)
     flights = sorted(flights, key=lambda k: k['timesort'])
     return flights
+
+def get_scheduled_flights():
+    all_flights = []
+    airports = ('EGLL', 'EGKK')
+    for a in airports:
+        c = cache.get('scheduled_{}'.format(a), [])
+        all_flights += c
+
+    all_flights = sorted(all_flights,
+                         key=lambda k: k['filed_departuretime'])
+    return all_flights

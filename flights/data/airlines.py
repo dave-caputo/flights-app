@@ -558,7 +558,7 @@ AIRLINES = [
 {"ICAO Code": "TAE", "Active": "Y", "Name": "TAME", "Country": "Ecuador", "IATA Code": "EQ", "Short Name": "Tame"},
 {"ICAO Code": "TAM", "Active": "Y", "Name": "TAM Brazilian Airlines", "Country": "Brazil", "IATA Code": "JJ", "Short Name": "Tam"},
 {"ICAO Code": "TAP", "Active": "Y", "Name": "TAP Portugal", "Country": "Portugal", "IATA Code": "TP", "Short Name": "Air Portugal"},
-{"ICAO Code": "TAR", "Active": "Y", "Name": "Tunisair", "Country": "Tunisia", "IATA Code": "TU", "Short Name": "Tunair"},
+{"ICAO Code": "TAR", "Active": "Y", "Name": "Tunisair", "Country": "Tunisia", "IATA Code": "TU", "Short Name": "Tunis Air"},
 {"ICAO Code": "TCG", "Active": "Y", "Name": "Thai Air Cargo", "Country": "Thailand", "IATA Code": "T2", "Short Name": "Thai Cargo"},
 {"ICAO Code": "TCW", "Active": "Y", "Name": "Thomas Cook Airlines", "Country": "Belgium", "IATA Code": "FQ", "Short Name": "Thomas Cook"},
 {"ICAO Code": "TCX", "Active": "Y", "Name": "Thomas Cook Airlines", "Country": "United Kingdom", "IATA Code": "MT", "Short Name": "Kestrel"},
