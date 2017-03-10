@@ -1,0 +1,34 @@
+{% extends "home/home_page.html" %}
+
+{% load data_extras %}
+{% load wagtailcore_tags %}
+
+{% block flight_type %}
+  <h3>Arrived</h3>
+  <a href="/"><p>Back</p></a>
+{% endblock %}
+
+{% block flights_list %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="ident">Flight</th>
+        <th class="airline">Airline</th>
+        <th class="origincity">From</th>
+        <th class="destination">Destination</th>
+        <th class="estimatedarrivaltime">Actual Arrival Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for flight in arrived %}
+        <tr>
+          <td class="ident">{{ flight.ident }}</td>
+          <td class="airline">{{ flight.ident|airline }}</td>
+          <td class="origincity">{{ flight.origin|location }}</td>
+          <td class="destination">{{ flight.destinationName }}</td>
+          <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime|dformat }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>   
+{% endblock %}
