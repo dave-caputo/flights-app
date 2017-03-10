@@ -75,6 +75,7 @@ th {
   text-align: center;
 }
 */
-.estimatedarrivaltime, .actualarrivaltime {
+.estimatedarrivaltime, .actualarrivaltime, .filed_departuretime,
+.actualdeparturetime {
   text-align: right;
 }

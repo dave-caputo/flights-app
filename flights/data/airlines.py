@@ -146,7 +146,7 @@ AIRLINES = [
 {"ICAO Code": "LNE", "Active": "Y", "Name": "Aerolane", "Country": "Ecuador", "IATA Code": "XL", "Short Name": "Lan Ecuador"},
 {"ICAO Code": "LUR", "Active": "Y", "Name": "Atlantis European Airways", "Country": "Armenia", "IATA Code": "TD", "Short Name": ""},
 {"ICAO Code": "LXR", "Active": "Y", "Name": "Air Luxor", "Country": "Portugal", "IATA Code": "LK", "Short Name": "Airluxor"},
-{"ICAO Code": "MAU", "Active": "Y", "Name": "Air Mauritius", "Country": "Mauritius", "IATA Code": "MK", "Short Name": "Airmauritius"},
+{"ICAO Code": "MAU", "Active": "Y", "Name": "Air Mauritius", "Country": "Mauritius", "IATA Code": "MK", "Short Name": "Air Mauritius"},
 {"ICAO Code": "MDG", "Active": "Y", "Name": "Air Madagascar", "Country": "Madagascar", "IATA Code": "MD", "Short Name": "Air Madagascar"},
 {"ICAO Code": "MLD", "Active": "Y", "Name": "Air Moldova", "Country": "Moldova", "IATA Code": "9U", "Short Name": "Air Moldova"},
 {"ICAO Code": "MPD", "Active": "Y", "Name": "Air Plus Comet", "Country": "Spain", "IATA Code": "A7", "Short Name": "Red Comet"},

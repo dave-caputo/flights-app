@@ -53,3 +53,14 @@ def get_scheduled_flights():
     all_flights = sorted(all_flights,
                          key=lambda k: k['filed_departuretime'])
     return all_flights
+
+def get_departed_flights():
+    all_flights = []
+    airports = ('EGLL', 'EGKK')
+    for a in airports:
+        c = cache.get('departed_{}'.format(a), [])
+        all_flights += c
+
+    all_flights = sorted(all_flights,
+                         key=lambda k: k['actualdeparturetime'])
+    return all_flights

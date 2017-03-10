@@ -100,3 +100,15 @@ class FlightClientTest(TestCase):
         client.get_live_request('Scheduled', params)
         # client.save()
         # self.assertEqual(Enroute.objects.count(), 10)
+
+    def test_json_client_makes_a_live_departed_request(self):
+        '''
+        Request data is obtained from file server. Use with caution to
+        avoid unnecessary costs.
+        '''
+        params = {'airport': 'EGLL', 'howMany': 15, 'filter': 'airline', 'offset': 15}
+        
+        client = FlightClient()
+        client.get_live_request('Departed', params)
+        # client.save()
+        # self.assertEqual(Enroute.objects.count(), 10)

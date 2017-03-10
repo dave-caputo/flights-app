@@ -5,7 +5,7 @@ def crop_request(func):
     def wrapper(self, operation, *args, **kwargs):
         r = func(self, operation, *args, **kwargs)
 
-        mapping = {'Arrived': 'arrivals',}
+        mapping = {'Arrived': 'arrivals', 'Departed': 'departures'}
 
         if operation in mapping:
             op = mapping[operation]

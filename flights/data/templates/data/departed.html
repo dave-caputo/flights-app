@@ -16,7 +16,7 @@
         <th class="airline">Airline</th>
         <th class="origin">From</th>
         <th class="destination">Destination</th>
-        <th class="filed_departuretime">Departure</th>
+        <th class="actualdeparturetime">Departure</th>
       </tr>
     </thead>
     <tbody>
@@ -26,7 +26,7 @@
           <td class="airline">{{ flight.ident|airline }}</td>
           <td class="origin">{{ flight.originName }}</td>
           <td class="destination">{{ flight.destination|location }}</td>
-          <td class="filed_departuretime">{{ flight.filed_departuretime|dformat }}</td>
+          <td class="actualdeparturetime">{{ flight.actualdeparturetime|dformat }}</td>
         </tr>
       {% endfor %}
     </tbody>
