@@ -74,6 +74,6 @@ th {
   text-align: center;
 }
 
-.estimatedarrivaltime {
+.estimatedarrivaltime, .actualarrivaltime {
   text-align: right;
 }

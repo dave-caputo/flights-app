@@ -16,17 +16,17 @@
         <th class="airline">Airline</th>
         <th class="origincity">From</th>
         <th class="destination">Destination</th>
-        <th class="estimatedarrivaltime">Actual Arrival Time</th>
+        <th class="actualarrivaltime">Actual Arrival Time</th>
       </tr>
     </thead>
     <tbody>
       {% for flight in arrived %}
         <tr>
-          <td class="ident">{{ flight.ident }}</td>
+          <td class="ident"><a href="http://flightaware.com/live/flight/{{ flight.ident }}" target="_blank">{{ flight.ident }}</a></td>
           <td class="airline">{{ flight.ident|airline }}</td>
           <td class="origincity">{{ flight.origin|location }}</td>
           <td class="destination">{{ flight.destinationName }}</td>
-          <td class="estimatedarrivaltime">{{ flight.actualarrivaltime|dformat }}</td>
+          <td class="actualarrivaltime">{{ flight.actualarrivaltime|dformat }}</td>
         </tr>
       {% endfor %}
     </tbody>

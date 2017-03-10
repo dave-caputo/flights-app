@@ -4,7 +4,7 @@
 {% load wagtailcore_tags %}
 
 {% block flight_type %}
-  <h3>Scheduled arrivals</h3>
+  <h3>Scheduled and Actual Arrivals</h3>
   <a href="/"><p>Back</p></a>
 {% endblock %}
 
@@ -17,16 +17,18 @@
         <th class="origincity">From</th>
         <th class="destination">Destination</th>
         <th class="estimatedarrivaltime">Estimated Arrival</th>
+        <th class="actualarrivaltime">Actual Arrival</th>
       </tr>
     </thead>
     <tbody>
-      {% for flight in enroute %}
+      {% for flight in enroute_arrived %}
         <tr>
           <td class="ident"><a href="http://flightaware.com/live/flight/{{ flight.ident }}" target="_blank">{{ flight.ident }}</a></td>
           <td class="airline">{{ flight.ident|airline }}</td>
           <td class="origincity">{{ flight.origin|location }}</td>
           <td class="destination">{{ flight.destinationName }}</td>
           <td class="estimatedarrivaltime">{{ flight.estimatedarrivaltime|dformat }}</td>
+          <td class="actualarrivaltime">{{ flight.actualarrivaltime|dformat }}</td>
         </tr>
       {% endfor %}
     </tbody>
