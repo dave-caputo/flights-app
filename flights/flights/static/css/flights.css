@@ -76,6 +76,6 @@ th {
 }
 */
 .estimatedarrivaltime, .actualarrivaltime, .filed_departuretime,
-.actualdeparturetime {
+.actualdeparturetime, .timesort {
   text-align: right;
 }

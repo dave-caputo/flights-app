@@ -1,0 +1,41 @@
+{% extends "home/home_page.html" %}
+
+{% load data_extras %}
+{% load wagtailcore_tags %}
+
+{% block flight_type %}
+  <h3>Scheduled and Actual Departures</h3>
+  <a href="/"><p>Back</p></a>
+{% endblock %}
+
+{% block flights_list %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="ident">Flight</th>
+        <th class="airline">Airline</th>
+        <th class="origincity">From</th>
+        <th class="destination">Destination</th>
+        <th class="flightstatus">Status</th>
+        <th class="actualdeparturetime">Departure time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for flight in scheduled_departed %}
+        <tr>
+          <td class="ident"><a href="http://flightaware.com/live/flight/{{ flight.ident }}" target="_blank">{{ flight.ident }}</a></td>
+          <td class="airline">{{ flight.ident|airline }}</td>
+          <td class="origin">{{ flight.originName }}</td>
+          <td class="destination">{{ flight.destination|location }}</td>
+          <td class="flightstatus">
+          {% if flight.filed_departuretime %}
+            Scheduled
+          {% else %}
+            Departed
+          {% endif %}
+          <td class="timesort">{{ flight.timesort|dformat }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>   
+{% endblock %}

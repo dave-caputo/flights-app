@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 
 from home.utils import get_enroute_flights, get_arrived_flights
 from home.utils import get_enroute_arrived_flights, get_scheduled_flights
-from home.utils import get_departed_flights
+from home.utils import get_departed_flights, get_scheduled_departed_flights
 
 
 class EnrouteFlightsView(TemplateView):
@@ -49,4 +49,14 @@ class DepartedFlightsView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['departed'] = get_departed_flights()
+        return context
+
+class ScheduledDepartedFlightsView(TemplateView):
+    template_name = 'data/scheduled_departed.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['scheduled'] = get_scheduled_flights()
+        context['departed'] = get_departed_flights()
+        context['scheduled_departed'] = get_scheduled_departed_flights()
         return context

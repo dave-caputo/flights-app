@@ -64,3 +64,13 @@ def get_departed_flights():
     all_flights = sorted(all_flights,
                          key=lambda k: k['actualdeparturetime'])
     return all_flights
+
+def get_scheduled_departed_flights():
+    a = get_departed_flights()
+    b = get_scheduled_flights()
+    flights = a + b
+    for f in flights:
+        f['timesort'] = f.get('actualdeparturetime', 0) + \
+            f.get('filed_departuretime', 0)
+    flights = sorted(flights, key=lambda k: k['timesort'])
+    return flights
