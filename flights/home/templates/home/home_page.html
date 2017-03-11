@@ -39,12 +39,16 @@
     <div class="flights-body flights-main">
 
       {% block flight_type %}
-        <h3><a href="{% url 'data:enroute' %}">Scheduled Arrivals</a></h3>
-        <h3><a href="{% url 'data:arrived' %}">Arrived</a></h3>
-        <h3><a href="{% url 'data:enroute_arrived' %}">Scheduled and Actual Arrivals</a></h3>
-        <h3><a href="{% url 'data:scheduled' %}">Scheduled Departures</a></h3>
-        <h3><a href="{% url 'data:departed' %}">Departed</a></h3>
-        <h3><a href="{% url 'data:scheduled_departed' %}">Scheduled and Actual Departures</a></h3>
+        <h3>ARRIVALS: 
+          <a href="{% url 'data:enroute' %}">Scheduled</a> |
+          <a href="{% url 'data:arrived' %}">Actual</a> |
+          <a href="{% url 'data:enroute_arrived' %}">All</a>
+        </h3>
+        <h3>DEPARTURES:
+          <a href="{% url 'data:scheduled' %}">Scheduled</a> |
+          <a href="{% url 'data:departed' %}">Actual</a> |
+          <a href="{% url 'data:scheduled_departed' %}">All</a>
+        </h3>
       {% endblock %}
 
       {% block flights_list %}{% endblock %}
