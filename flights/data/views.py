@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
-from home.utils import get_enroute_flights, get_arrived_flights
-from home.utils import get_enroute_arrived_flights, get_scheduled_flights
-from home.utils import get_departed_flights, get_scheduled_departed_flights
+from data.utils import get_enroute_flights, get_arrived_flights
+from data.utils import get_enroute_arrived_flights, get_scheduled_flights
+from data.utils import get_departed_flights, get_scheduled_departed_flights
 
 
 class EnrouteFlightsView(TemplateView):
