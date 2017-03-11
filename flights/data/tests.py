@@ -3,7 +3,7 @@ from django.test import TestCase
 
 
 from data import enroute_test
-from data.json_client import FlightClient
+from data.clients.rest_client import FlightClient
 from data.models import Enroute
 from data.serializer import EnrouteSerializer
 

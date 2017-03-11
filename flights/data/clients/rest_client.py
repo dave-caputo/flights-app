@@ -3,8 +3,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from django.conf import settings
-from data.decorators import cache_operation, crop_request
 from data.serializer import EnrouteSerializer
+from data.utils import cache_operation, crop_request
 
 
 class FlightClient:

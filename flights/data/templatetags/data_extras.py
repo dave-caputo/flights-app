@@ -2,8 +2,8 @@ import datetime
 
 from django import template
 
-from data.airlines import AIRLINES
-from data.airports import AIRPORTS
+from data.sources.airlines import AIRLINES
+from data.sources.airports import AIRPORTS
 
 # EGLL: Heathrow
 # EGKK: Gatwick
