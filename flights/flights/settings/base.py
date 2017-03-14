@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'home',
     'search',
     'data',
+    'scraper',
 
     'wagtail.wagtailforms',
     'wagtail.wagtailredirects',

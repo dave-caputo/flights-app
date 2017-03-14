@@ -49,6 +49,10 @@
           <a href="{% url 'data:departed' %}">Actual</a> |
           <a href="{% url 'data:scheduled_departed' %}">All</a>
         </h3>
+        <br />
+        <h1>Scraper:</h1>
+        <h3>DEPARTURES:</h3>
+        <a href="{% url 'scraper:heathrow_departures' %}">Heathrow</a>
       {% endblock %}
 
       {% block flights_list %}{% endblock %}
