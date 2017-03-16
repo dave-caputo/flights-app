@@ -1,5 +1,38 @@
-<html>
-  <body>
-    <h1>This template will display departures from heathrow</h1>
-  </body>
-</html>
+{% extends "home/home_page.html" %}
+
+{% load data_extras %}
+{% load wagtailcore_tags %}
+
+{% block flight_type %}
+  <h2><strong>DEPARTURES</strong></h2>
+  <a href="/"><p>Back</p></a>
+{% endblock %}
+
+{% block flights_list %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="ident">Flight</th>
+        <th class="airline">Airline</th>
+        <th class="origin">From</th>
+        <th class="terminal">Terminal</th>
+        <th class="destination">Destination</th>
+        <th class="flightstatus">Status</th>
+        <th class="actualdeparturetime">Departure time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for flight in departures %}
+        <tr>
+          <td class="ident"><a href="#" target="_blank">{{ flight.flightNumber }}</a></td>
+          <td class="airline">{{ flight.airlineName }}</td>
+          <td class="origin">London Heathrow</td>
+          <td class="terminal">{{ flight.terminalId }}</td>
+          <td class="destination">{{ flight.city }}</td>
+          <td class="flightstatus">{{ flight.flightStatusText }}</td>
+          <td class="timesort">{{ flight.flightStatusTime }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>   
+{% endblock %}
