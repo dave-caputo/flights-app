@@ -12,3 +12,12 @@ class HeathrowDeparturesView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['departures'] = get_heathrow_flights('departures')
         return context
+
+
+class HeathrowArrivalsView(TemplateView):
+    template_name = 'scraper/heathrow_arrivals.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['arrivals'] = get_heathrow_flights('arrivals')
+        return context
