@@ -39,7 +39,7 @@
     <div class="flights-body flights-main">
 
       {% block flight_type %}
-        <h3>ARRIVALS: 
+        <h3>ARRIVALS:
           <a href="{% url 'data:enroute' %}">Scheduled</a> |
           <a href="{% url 'data:arrived' %}">Actual</a> |
           <a href="{% url 'data:enroute_arrived' %}">All</a>
@@ -52,7 +52,8 @@
         <br />
         <h1>Scraper:</h1>
         <h3>ARRIVALS:</h3>
-        <a href="{% url 'scraper:heathrow_arrivals' %}">Heathrow</a>
+        <a href="{% url 'scraper:heathrow_arrivals' %}">Heathrow</a> |
+        <a href="{% url 'scraper:gatwick_arrivals' %}">Gatwick</a>
         <h3>DEPARTURES:</h3>
         <a href="{% url 'scraper:heathrow_departures' %}">Heathrow</a>
       {% endblock %}

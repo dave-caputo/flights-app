@@ -4,7 +4,7 @@
 {% load wagtailcore_tags %}
 
 {% block flight_type %}
-  <h2><strong>DEPARTURES</strong></h2>
+  <h2><strong>ARRIVALS</strong></h2>
   <a href="/"><p>Back</p></a>
 {% endblock %}
 
@@ -22,13 +22,13 @@
       </tr>
     </thead>
     <tbody>
-      {% for flight in departures %}
+      {% for flight in arrivals %}
         <tr>
           <td class="ident"><a href="#" target="_blank">{{ flight.flightNumber }}</a></td>
           <td class="airline">{{ flight.airlineName }}</td>
-          <td class="origin">London Heathrow</td>
+          <td class="origin">{{ flight.city }}</td>
           <td class="terminal">{{ flight.terminalId }}</td>
-          <td class="destination">{{ flight.city }}</td>
+          <td class="destination">London Gatwick</td>
           <td class="flightstatus">{{ flight.flightStatusText }}</td>
           <td class="timesort">{{ flight.flightStatusTime }}</td>
         </tr>
