@@ -54,9 +54,13 @@
         <h3>ARRIVALS:</h3>
         <a href="{% url 'scraper:heathrow_arrivals' %}">Heathrow</a> |
         <a href="{% url 'scraper:gatwick_arrivals' %}">Gatwick</a>
+        <br />
         <h3>DEPARTURES:</h3>
-        <a href="{% url 'scraper:heathrow_departures' %}">Heathrow</a>
+        <a href="{% url 'scraper:heathrow_departures' %}">Heathrow</a> |
+        <a href="{% url 'scraper:gatwick_departures' %}">Gatwick</a>
+        <br />
         <h3><a href="{% url 'scraper:carrousel' %}">CARROUSEL</a></h3>
+
       {% endblock %}
 
       {% block flights_list %}{% endblock %}

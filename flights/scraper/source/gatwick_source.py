@@ -5,6 +5,11 @@ gatwick_arrivals_test_links = [
     'scraper/source/gatwick_test.html',
 ]
 
+gatwick_departures_test_links = [
+    'test',
+    'scraper/source/gatwick_departures_test.html',
+]
+
 gatwick_arrivals_test_blockmap = ['tr', {'class_': 'flight-info-row'}]
 
 gatwick_arrivals_test_datamap = [
@@ -32,7 +37,13 @@ gatwick_arrivals_test_datamap = [
 
 def get_gatwick_flights(operation):
     if operation == 'arrivals':
-        r = FlightScraper(gatwick_arrivals_test_links,
-                          gatwick_arrivals_test_blockmap,
-                          gatwick_arrivals_test_datamap)
-        return r.data_list
+        op_links = gatwick_arrivals_test_links
+    elif operation == 'departures':
+        op_links = gatwick_departures_test_links
+    else:
+        pass
+    r = FlightScraper(op_links,
+                      gatwick_arrivals_test_blockmap,
+                      gatwick_arrivals_test_datamap)
+    print(r.data_list)
+    return r.data_list

@@ -121,8 +121,11 @@ class FlightScraper():
                 data = self.get_string(m, block)
 
             elif m['action'] == 'find attribute':
-                data = block.find(m['tag']).get(m['attribute'])
-                data = m.get('prefix', '') + data
+                try:
+                    data = block.find(m['tag']).get(m['attribute'])
+                    data = m.get('prefix', '') + data
+                except TypeError:
+                    data = ''
 
             elif m['action'] == 'find parent attribute':
                 data = block.find(m['tag'], **m.get('attribute', {}))
