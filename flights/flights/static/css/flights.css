@@ -70,11 +70,10 @@ th {
     font-size: 20px;
 }
 
-/*
-.destination {
+.placeholder {
   text-align: center;
 }
-*/
+
 .estimatedarrivaltime, .actualarrivaltime, .filed_departuretime,
 .actualdeparturetime, .timesort {
   text-align: right;

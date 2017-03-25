@@ -40,3 +40,6 @@ class GatwickArrivalsView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['arrivals'] = get_gatwick_flights('arrivals')
         return context
+
+class CarrouselView(TemplateView):
+    template_name = 'scraper/carrousel.html'
