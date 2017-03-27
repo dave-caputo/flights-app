@@ -49,6 +49,15 @@ class CarrouselView(TemplateView):
     template_name = 'scraper/carrousel.html'
 
 
+class CarrouselHeathrowDeparturesView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, format=None):
+        data = {'data': get_heathrow_flights('departures'), }
+        return Response(data)
+
+
 class CarrouselGatwickDeparturesView(APIView):
     authentication_classes = []
     permission_classes = []

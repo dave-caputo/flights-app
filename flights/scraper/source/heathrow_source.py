@@ -13,4 +13,9 @@ links = {
 def get_heathrow_flights(operation):
     r = requests.get(links[operation])
     r = r.json()
-    return r['flightList']
+    flights = r['flightList']
+    for item in flights:
+        if 'flightStatusTime' not in item:
+            item['flightStatusTime'] = ''
+    print(flights)
+    return flights
