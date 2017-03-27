@@ -24,7 +24,8 @@
       </div>
       <div class="item">
         <div>
-          <table class="table table-striped table-bordered" id="test_table" cellspacing="0" width="100%">
+          <h1>Gatwick Departures</h1>
+          <table class="table table-striped table-bordered" id="departures_table" cellspacing="0" width="100%">
             <thead>
               <tr>
                 <th>Flight</th>
@@ -41,6 +42,33 @@
                 <th>Airline Name</th>
                 <th>Terminal</th>
                 <th>Destination</th>
+                <th>Status</th>
+                <th>Departure Time</th>
+              </tr>
+            </tfoot>
+          </table>
+       </div>
+      </div>
+      <div class="item">
+        <div>
+          <h1>Gatwick Arrivals</h1>
+          <table class="table table-striped table-bordered" id="arrivals_table" cellspacing="0" width="100%">
+            <thead>
+              <tr>
+                <th>Flight</th>
+                <th>Airline Name</th>
+                <th>Terminal</th>
+                <th>Origin</th>
+                <th>Status</th>
+                <th>Departure Time</th>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th>Flight</th>
+                <th>Airline Name</th>
+                <th>Terminal</th>
+                <th>Origin</th>
                 <th>Status</th>
                 <th>Departure Time</th>
               </tr>
@@ -67,8 +95,20 @@
 
 {% block extra_js %}
 <script type="text/javascript">
-  $('#test_table').DataTable({
+  $('#departures_table').DataTable({
       "ajax": "{% url 'scraper:carrousel_gatwick_departures' %}",
+      "pageLength": 30,
+      "columns": [
+        {"data": "flightNumber"},
+        {"data": "airlineName"},
+        {"data": "terminalId"},
+        {"data": "city"},
+        {"data": "flightStatusText"},
+        {"data": "flightStatusTime"},
+      ],
+  });
+  $('#arrivals_table').DataTable({
+      "ajax": "{% url 'scraper:carrousel_gatwick_arrivals' %}",
       "pageLength": 30,
       "columns": [
         {"data": "flightNumber"},

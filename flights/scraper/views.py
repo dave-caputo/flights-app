@@ -56,3 +56,11 @@ class CarrouselGatwickDeparturesView(APIView):
     def get(self, request, format=None):
         data = {'data': get_gatwick_flights('departures'), }
         return Response(data)
+
+class CarrouselGatwickArrivalsView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, format=None):
+        data = {'data': get_gatwick_flights('arrivals'), }
+        return Response(data)
