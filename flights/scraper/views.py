@@ -57,6 +57,14 @@ class CarrouselHeathrowDeparturesView(APIView):
         data = {'data': get_heathrow_flights('departures'), }
         return Response(data)
 
+class CarrouselHeathrowArrivalsView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, format=None):
+        data = {'data': get_heathrow_flights('arrivals'), }
+        return Response(data)
+
 
 class CarrouselGatwickDeparturesView(APIView):
     authentication_classes = []
