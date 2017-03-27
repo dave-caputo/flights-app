@@ -2,7 +2,7 @@ from scraper.scraper import FlightScraper
 
 gatwick_arrivals_test_links = [
     'test',  # Tells FlightScraper that the source are test files and not urls.
-    'scraper/source/gatwick_test.html',
+    'scraper/source/gatwick_arrivals_test.html',
 ]
 
 gatwick_departures_test_links = [
@@ -10,9 +10,9 @@ gatwick_departures_test_links = [
     'scraper/source/gatwick_departures_test.html',
 ]
 
-gatwick_arrivals_test_blockmap = ['tr', {'class_': 'flight-info-row'}]
+gatwick_test_blockmap = ['tr', {'class_': 'flight-info-row'}]
 
-gatwick_arrivals_test_datamap = [
+gatwick_test_datamap = [
     {
         'label': 'airlineName',
         'action': 'find attribute',
@@ -31,7 +31,6 @@ gatwick_arrivals_test_datamap = [
         'remove_column': 1,
         'tag': 'td',
     },
-
 ]
 
 
@@ -43,7 +42,7 @@ def get_gatwick_flights(operation):
     else:
         pass
     r = FlightScraper(op_links,
-                      gatwick_arrivals_test_blockmap,
-                      gatwick_arrivals_test_datamap)
+                      gatwick_test_blockmap,
+                      gatwick_test_datamap)
     print(r.data_list)
     return r.data_list
