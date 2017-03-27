@@ -1,6 +1,9 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 from scraper.source.heathrow_source import get_heathrow_flights
 from scraper.source.gatwick_source import get_gatwick_flights
 
@@ -41,5 +44,15 @@ class GatwickArrivalsView(TemplateView):
         context['arrivals'] = get_gatwick_flights('arrivals')
         return context
 
+
 class CarrouselView(TemplateView):
     template_name = 'scraper/carrousel.html'
+
+
+class CarrouselGatwickDeparturesView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, format=None):
+        data = {'data': get_gatwick_flights('departures'), }
+        return Response(data)

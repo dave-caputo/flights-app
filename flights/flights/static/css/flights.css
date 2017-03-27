@@ -78,3 +78,7 @@ th {
 .actualdeparturetime, .timesort {
   text-align: right;
 }
+
+.carousel-control.left, .carousel-control.right {
+    background-image: none !important;
+}

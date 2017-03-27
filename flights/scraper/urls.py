@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 from scraper.views import HeathrowArrivalsView, HeathrowDeparturesView
 from scraper.views import GatwickArrivalsView, GatwickDeparturesView
+from scraper.views import CarrouselGatwickDeparturesView
 from scraper.views import CarrouselView
 
 urlpatterns = [
@@ -15,4 +16,7 @@ urlpatterns = [
         name='gatwick_departures'),
     url(r'^carrousel/', CarrouselView.as_view(),
         name='carrousel'),
+    url(r'^carrousel_gatwick_departures/',
+        CarrouselGatwickDeparturesView.as_view(),
+        name='carrousel_gatwick_departures'),
 ]
