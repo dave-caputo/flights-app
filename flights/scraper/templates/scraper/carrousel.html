@@ -146,7 +146,7 @@
 {% block extra_js %}
 <script type="text/javascript">
   $('#heathrow_departures_table').DataTable({
-      "ajax": "{% url 'scraper:carrousel_heathrow_departures' %}",
+      "ajax": "{% url 'scraper:carousel_flights' airport='heathrow' operation='departures' %}",
       "pageLength": 30,
       "columns": [
         {"data": "flightNumber"},
@@ -158,7 +158,7 @@
       ],
   });
   $('#heathrow_arrivals_table').DataTable({
-      "ajax": "{% url 'scraper:carrousel_heathrow_arrivals' %}",
+      "ajax": "{% url 'scraper:carousel_flights' airport='heathrow' operation='arrivals' %}",
       "pageLength": 30,
       "columns": [
         {"data": "flightNumber"},
@@ -170,7 +170,7 @@
       ],
   });
   $('#gatwick_departures_table').DataTable({
-      "ajax": "{% url 'scraper:carrousel_gatwick_departures' %}",
+      "ajax": "{% url 'scraper:carousel_flights' airport='gatwick' operation='departures' %}",
       "pageLength": 30,
       "columns": [
         {"data": "flightNumber"},
@@ -182,7 +182,7 @@
       ],
   });
   $('#gatwick_arrivals_table').DataTable({
-      "ajax": "{% url 'scraper:carrousel_gatwick_arrivals' %}",
+      "ajax": "{% url 'scraper:carousel_flights' airport='gatwick' operation='arrivals' %}",
       "pageLength": 30,
       "columns": [
         {"data": "flightNumber"},

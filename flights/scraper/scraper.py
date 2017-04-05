@@ -68,7 +68,8 @@ class FlightScraper():
             block_data = self.get_block_data(block)
             if 'exclude' not in block_data:
                 self.data_list.append(block_data)
-                logger.info('Block data obtained for block {} containing {}'.format(i + 1, repr(block_data)))
+                # logger.info('Block data obtained for block {} containing {}'.format(i + 1, repr(block_data)))
+                logger.info('Block data obtained for block {}.'.format(i + 1))
                 if 'link' in block_data:
                     self.sublinks.append(block_data['link'])
                 else:
@@ -148,3 +149,9 @@ class FlightScraper():
     def find_exclusions(self, m, data):
         exclusions = m.get('exclude', [])
         return data in exclusions
+
+
+def format_to_data_table(func):
+    def wrapper(*args, **kwargs):
+        return {'data': func(*args, **kwargs)}
+    return wrapper

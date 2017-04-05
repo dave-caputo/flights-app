@@ -2,11 +2,8 @@ from django.conf.urls import url
 
 from scraper.views import HeathrowArrivalsView, HeathrowDeparturesView
 from scraper.views import GatwickArrivalsView, GatwickDeparturesView
-from scraper.views import CarrouselHeathrowDeparturesView
-from scraper.views import CarrouselHeathrowArrivalsView
-from scraper.views import CarrouselGatwickDeparturesView
-from scraper.views import CarrouselGatwickArrivalsView
-from scraper.views import CarrouselView
+from scraper.views import CarrouselView, CarouselFlightsView
+
 
 urlpatterns = [
     url(r'^heathrow_departures/', HeathrowDeparturesView.as_view(),
@@ -17,20 +14,12 @@ urlpatterns = [
         name='gatwick_arrivals'),
     url(r'^gatwick_departures/', GatwickDeparturesView.as_view(),
         name='gatwick_departures'),
+
     url(r'^carrousel/', CarrouselView.as_view(),
         name='carrousel'),
 
-    url(r'^carrousel_heathrow_departures/',
-        CarrouselHeathrowDeparturesView.as_view(),
-        name='carrousel_heathrow_departures'),
-    url(r'^carrousel_heathrow_arrivals/',
-        CarrouselHeathrowArrivalsView.as_view(),
-        name='carrousel_heathrow_arrivals'),
+    url(r'^carousel/(?P<airport>\w+)/(?P<operation>\w+)/$',
+        CarouselFlightsView.as_view(),
+        name='carousel_flights'),
 
-    url(r'^carrousel_gatwick_departures/',
-        CarrouselGatwickDeparturesView.as_view(),
-        name='carrousel_gatwick_departures'),
-    url(r'^carrousel_gatwick_arrivals/',
-        CarrouselGatwickArrivalsView.as_view(),
-        name='carrousel_gatwick_arrivals'),
 ]

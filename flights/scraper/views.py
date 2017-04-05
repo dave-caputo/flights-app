@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.views.generic import TemplateView
 from django.shortcuts import render
 
@@ -14,7 +15,14 @@ class HeathrowDeparturesView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['departures'] = get_heathrow_flights('departures')
+        try:
+            flights = get_heathrow_flights('departures')
+            cache.set('heathrow_departures', flights, None)
+            context['departures'] = flights
+        except:
+            flights = cache.get('heathrow_departures', 'Not Available')
+            context['departures'] = flights
+        # context['departures'] = get_heathrow_flights('departures')
         return context
 
 
@@ -23,7 +31,14 @@ class HeathrowArrivalsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['arrivals'] = get_heathrow_flights('arrivals')
+        try:
+            flights = get_heathrow_flights('arrivals')
+            # cache.set('heathrow_arrivals', flights, None)
+            context['arrivals'] = flights
+        except:
+            flights = cache.get('heathrow_departures', 'Not Available')
+            context['arrivals'] = flights
+        # context['arrivals'] = get_heathrow_flights('arrivals')
         return context
 
 
@@ -32,7 +47,14 @@ class GatwickDeparturesView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['departures'] = get_gatwick_flights('departures')
+        try:
+            flights = get_gatwick_flights('departures')
+            # cache.set('gatwick_departures', flights, None)
+            context['departures'] = flights
+        except:
+            # flights = cache.get('gatwick_departures', 'Not Available')
+            context['departures'] = flights
+        # context['departures'] = get_gatwick_flights('departures')
         return context
 
 
@@ -49,35 +71,12 @@ class CarrouselView(TemplateView):
     template_name = 'scraper/carrousel.html'
 
 
-class CarrouselHeathrowDeparturesView(APIView):
+class CarouselFlightsView(APIView):
     authentication_classes = []
     permission_classes = []
 
-    def get(self, request, format=None):
-        data = {'data': get_heathrow_flights('departures'), }
-        return Response(data)
-
-class CarrouselHeathrowArrivalsView(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    def get(self, request, format=None):
-        data = {'data': get_heathrow_flights('arrivals'), }
-        return Response(data)
-
-
-class CarrouselGatwickDeparturesView(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    def get(self, request, format=None):
-        data = {'data': get_gatwick_flights('departures'), }
-        return Response(data)
-
-class CarrouselGatwickArrivalsView(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    def get(self, request, format=None):
-        data = {'data': get_gatwick_flights('arrivals'), }
+    def get(self, request, format=None, operation=None, airport=None):
+        g = {'heathrow': get_heathrow_flights,
+             'gatwick': get_gatwick_flights}
+        data = g[airport](operation)
         return Response(data)

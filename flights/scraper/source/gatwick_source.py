@@ -1,5 +1,9 @@
+from django.core.cache import cache
+
+from scraper.source.decorators import format_to_data_table
 from scraper.scraper import FlightScraper
 
+'''
 gatwick_arrivals_test_links = [
     'test',  # Tells FlightScraper that the source are test files and not urls.
     'scraper/source/gatwick_arrivals_test.html',
@@ -8,6 +12,15 @@ gatwick_arrivals_test_links = [
 gatwick_departures_test_links = [
     'test',
     'scraper/source/gatwick_departures_test.html',
+]
+'''
+
+gatwick_arrivals_live_links = [
+    'http://www.gatwickairport.com/flights/?type=arrivals'
+]
+
+gatwick_departures_live_links = [
+    'http://www.gatwickairport.com/flights/?type=departures'
 ]
 
 gatwick_test_blockmap = ['tr', {'class_': 'flight-info-row'}]
@@ -34,15 +47,14 @@ gatwick_test_datamap = [
 ]
 
 
+@format_to_data_table
 def get_gatwick_flights(operation):
-    if operation == 'arrivals':
-        op_links = gatwick_arrivals_test_links
-    elif operation == 'departures':
-        op_links = gatwick_departures_test_links
-    else:
-        pass
-    r = FlightScraper(op_links,
+    op_links = {
+        'arrivals': gatwick_arrivals_live_links,
+        'departures': gatwick_departures_live_links}
+
+    r = FlightScraper(op_links[operation],
                       gatwick_test_blockmap,
                       gatwick_test_datamap)
-    print(r.data_list)
+
     return r.data_list
