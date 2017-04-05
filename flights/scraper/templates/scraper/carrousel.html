@@ -110,7 +110,7 @@
                 <th>Terminal</th>
                 <th>Origin</th>
                 <th>Status</th>
-                <th>Departure Time</th>
+                <th>Arrival Time</th>
               </tr>
             </thead>
             <tfoot>
@@ -120,7 +120,7 @@
                 <th>Terminal</th>
                 <th>Origin</th>
                 <th>Status</th>
-                <th>Departure Time</th>
+                <th>Arrival Time</th>
               </tr>
             </tfoot>
           </table>
@@ -156,6 +156,8 @@
         {"data": "flightStatusText"},
         {"data": "flightStatusTime"},
       ],
+      "searching": false,
+      "lengthChange": false
   });
   $('#heathrow_arrivals_table').DataTable({
       "ajax": "{% url 'scraper:carousel_flights' airport='heathrow' operation='arrivals' %}",
@@ -168,6 +170,8 @@
         {"data": "flightStatusText"},
         {"data": "flightStatusTime"},
       ],
+      "searching": false,
+      "lengthChange": false
   });
   $('#gatwick_departures_table').DataTable({
       "ajax": "{% url 'scraper:carousel_flights' airport='gatwick' operation='departures' %}",
@@ -180,6 +184,8 @@
         {"data": "flightStatusText"},
         {"data": "flightStatusTime"},
       ],
+      "searching": false,
+      "lengthChange": false
   });
   $('#gatwick_arrivals_table').DataTable({
       "ajax": "{% url 'scraper:carousel_flights' airport='gatwick' operation='arrivals' %}",
@@ -192,6 +198,8 @@
         {"data": "flightStatusText"},
         {"data": "flightStatusTime"},
       ],
+      "searching": false,
+      "lengthChange": false
   });
 </script>
 {% endblock %}

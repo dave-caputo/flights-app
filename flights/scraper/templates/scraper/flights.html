@@ -1,0 +1,67 @@
+{% extends "home/home_page.html" %}
+
+{% load data_extras %}
+{% load wagtailcore_tags %}
+
+{% block flight_type %}
+  <h2><strong>{{ airport|title }} {{ operation|title }}</strong></h2>
+  <a href="/"><p>Back</p></a>
+{% endblock %}
+
+{% block flights_list %}
+  {% if operation == 'arrivals' %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="ident">Flight</th>
+          <th class="airline">Airline</th>
+          <th class="origin">From</th>
+          <th class="terminal">Terminal</th>
+          <th class="destination">Destination</th>
+          <th class="flightstatus">Status</th>
+          <th class="actualdeparturetime">Arrival time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for flight in flights.data %}
+          <tr>
+            <td class="ident"><a href="#" target="_blank">{{ flight.flightNumber }}</a></td>
+            <td class="airline">{{ flight.airlineName }}</td>
+            <td class="origin">{{ flight.city }}</td>
+            <td class="terminal">{{ flight.terminalId }}</td>
+            <td class="destination">{{ airport|title }}</td>
+            <td class="flightstatus">{{ flight.flightStatusText }}</td>
+            <td class="timesort">{{ flight.flightStatusTime }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% elif operation == 'departures' %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="ident">Flight</th>
+          <th class="airline">Airline</th>
+          <th class="origin">From</th>
+          <th class="terminal">Terminal</th>
+          <th class="destination">Destination</th>
+          <th class="flightstatus">Status</th>
+          <th class="actualdeparturetime">Departure time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for flight in flights.data %}
+          <tr>
+            <td class="ident"><a href="#" target="_blank">{{ flight.flightNumber }}</a></td>
+            <td class="airline">{{ flight.airlineName }}</td>
+            <td class="origin">{{ airport|title }}</td>
+            <td class="terminal">{{ flight.terminalId }}</td>
+            <td class="destination">{{ flight.city }}</td>
+            <td class="flightstatus">{{ flight.flightStatusText }}</td>
+            <td class="timesort">{{ flight.flightStatusTime }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

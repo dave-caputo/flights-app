@@ -52,12 +52,12 @@
         <br />
         <h1>Scraper:</h1>
         <h3>ARRIVALS:</h3>
-        <a href="{% url 'scraper:heathrow_arrivals' %}">Heathrow</a> |
-        <a href="{% url 'scraper:gatwick_arrivals' %}">Gatwick</a>
+        <a href="{% url 'scraper:flights' airport='heathrow' operation='arrivals' %}">Heathrow</a> |
+        <a href="{% url 'scraper:flights' airport='gatwick' operation='arrivals' %}">Gatwick</a>
         <br />
         <h3>DEPARTURES:</h3>
-        <a href="{% url 'scraper:heathrow_departures' %}">Heathrow</a> |
-        <a href="{% url 'scraper:gatwick_departures' %}">Gatwick</a>
+        <a href="{% url 'scraper:flights' airport='heathrow' operation='departures' %}">Heathrow</a> |
+        <a href="{% url 'scraper:flights' airport='gatwick' operation='departures' %}">Gatwick</a>
         <br />
         <h3><a href="{% url 'scraper:carrousel' %}">CARROUSEL</a></h3>
 
