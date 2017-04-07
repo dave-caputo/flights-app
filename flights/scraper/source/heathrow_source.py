@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from operator import itemgetter
 
 from bs4 import BeautifulSoup
 import pytz
@@ -50,16 +51,31 @@ right_now = utc_now.astimezone(london_tz)
 def get_heathrow_flights(operation):
     r = requests.get(links[operation])
     r = r.json()
-    flight_list = sorted(r['flightList'], key=lambda k: k['scheduledTimestamp'])
+    # flight_list = sorted(r['flightList'], key=lambda k: k['scheduledTimestamp'])
+    flight_list = sorted(
+        r['flightList'], key=itemgetter('scheduledTimestamp', 'city'))
+
     data = []
-    for flight in flight_list:
-        h = datetime.strptime(flight['scheduledTimestamp'], '%H:%M')
+    for i, f in enumerate(flight_list):
+
+        # crop list by scheduled time
+        h = datetime.strptime(f['scheduledTimestamp'], '%H:%M')
         d = datetime.combine(right_now.date(), h.time())
         d = london_tz.localize(d)
+
         too_early = right_now - d > timedelta(hours=1)
         too_late = d - right_now > timedelta(hours=1)
         if too_early or too_late:
             continue
-        else:
-            data.append(flight)
+
+        # merge flights by city and status
+        pf = flight_list[i - 1]
+        city_rep = f['city'] == pf['city']
+        status_rep = f['flightOutputStatus'] == pf['flightOutputStatus']
+
+        if city_rep and status_rep:
+            data[-1]['airlineName'] = ''
+            data[-1]['flightNumber'] += ', {}'.format(f['flightNumber'])
+            continue
+        data.append(f)
     return data
