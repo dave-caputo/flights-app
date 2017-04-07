@@ -10,12 +10,14 @@ from wagtail.wagtailcore import urls as wagtail_urls
 from wagtail.wagtaildocs import urls as wagtaildocs_urls
 
 from data import urls as data_urls
+from profiles import urls as profiles_urls
 from scraper import urls as scraper_urls
 
 urlpatterns = [
     url(r'^django-admin/', include(admin.site.urls)),
 
     url(r'^data/', include(data_urls, namespace='data')),
+    url(r'^profiles/', include(profiles_urls, namespace='profiles')),
     url(r'^scraper/', include(scraper_urls, namespace='scraper')),
 
     url(r'^admin/', include(wagtailadmin_urls)),

@@ -20,7 +20,12 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li class="flights-nav-item"><a href="">About</a></li>
+            <li class="flights-nav-item">{{ user }}</li>
+            <li class="nav navbar-nav navbar-right">
+              <a href="{% url 'profiles:profile' %}">
+                <span class ="glyphicon glyphicon-cog"></span>
+              </a>
+            </li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
