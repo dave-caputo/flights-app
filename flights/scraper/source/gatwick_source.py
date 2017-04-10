@@ -1,19 +1,8 @@
 from django.core.cache import cache
 
-from scraper.source.decorators import format_to_data_table
+from scraper.source.utils import format_to_data_table, filter_flight_list
 from scraper.scraper import FlightScraper
 
-'''
-gatwick_arrivals_test_links = [
-    'test',  # Tells FlightScraper that the source are test files and not urls.
-    'scraper/source/gatwick_arrivals_test.html',
-]
-
-gatwick_departures_test_links = [
-    'test',
-    'scraper/source/gatwick_departures_test.html',
-]
-'''
 
 gatwick_arrivals_live_links = [
     'http://www.gatwickairport.com/flights/?type=arrivals'
@@ -37,8 +26,8 @@ gatwick_test_datamap = [
     {
         'labels':
             [
-                'airlineName', 'flightStatusTime', 'city', 'flightNumber',
-                'flightStatusText', 'terminalId', 'Gate', 'Notification', 'Pin'
+                'airlineName', 'scheduledTimestamp', 'city', 'flightNumber',
+                'flightOutputStatus', 'terminalId', 'Gate', 'Notification', 'Pin'
             ],  # list must include all columns titles incl. those to be removed.
         'action': 'get_table_columns',
         'remove_column': 1,
@@ -57,4 +46,6 @@ def get_gatwick_flights(operation):
                       gatwick_test_blockmap,
                       gatwick_test_datamap)
 
-    return r.data_list
+    data = filter_flight_list(r.data_list, operation)
+
+    return data

@@ -13,28 +13,21 @@
     <table class="table table-striped table-bordered" id="arrivals_table" cellspacing="0" width="100%">
       <thead>
         <tr>
-          <th class="ident">Flight</th>
-          <th class="airline">Airline</th>
-          <th class="origin">From</th>
-          <th class="terminal">Terminal</th>
-          <th class="destination">Destination</th>
-          <th class="flightstatus">Status</th>
-          <th class="actualdeparturetime">Arrival time</th>
-          <th class="scheduled">Scheduled</th>
+          <th class="col-md-1 scheduled">Scheduled</th>
+          <th class="col-md-1 origin">From</th>
+          <th class="col-md-3 ident">Flight</th>
+          <th class="col-md-1 terminal">Terminal</th>
+          <th class="col-md-2 flightstatus">Status</th>
         </tr>
       </thead>
       <tbody>
         {% for flight in flights.data %}
           <tr>
-            <td class="ident"><a href="#" target="_blank">{{ flight.flightNumber }}</a></td>
-            <td class="airline">{{ flight.airlineName }}</td>
-            <td class="origin">{{ flight.city }}</td>
-            <td class="terminal">{{ flight.terminalId }}</td>
-            <td class="destination">{{ airport|title }}</td>
-            <td class="flightstatus">{{ flight.flightOutputStatus }}</td>
-            <!-- <td class="flightstatus">{{ flight.flightStatusText }}</td> -->
-            <td class="timesort">{{ flight.flightStatusTime }}</td>
             <td class="scheduled">{{ flight.scheduledTimestamp }}</td>
+            <td class="origin">{{ flight.city }}</td>
+            <td class="ident">{{ flight.flightNumber }}</a></td>
+            <td class="terminal">{{ flight.terminalId }}</td>
+            <td class="flightstatus">{{ flight.flightOutputStatus }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -43,25 +36,21 @@
     <table class="table table-striped table-bordered" id="departures_table" cellspacing="0" width="100%">
       <thead>
         <tr>
-          <th class="ident">Flight</th>
-          <th class="airline">Airline</th>
-          <th class="origin">From</th>
-          <th class="terminal">Terminal</th>
-          <th class="destination">Destination</th>
-          <th class="flightstatus">Status</th>
-          <th class="actualdeparturetime">Departure time</th>
+          <th class="col-md-1 scheduled">Scheduled</th>
+          <th class="col-md-1 destination">To</th>
+          <th class="col-md-3 ident">Flight</th>
+          <th class="col-md-1 terminal">Terminal</th>
+          <th class="col-md-2 flightstatus">Status</th>
         </tr>
       </thead>
       <tbody>
         {% for flight in flights.data %}
           <tr>
-            <td class="ident"><a href="#" target="_blank">{{ flight.flightNumber }}</a></td>
-            <td class="airline">{{ flight.airlineName }}</td>
-            <td class="origin">{{ airport|title }}</td>
+            <td class="scheduled">{{ flight.scheduledTimestamp }}</td>
+            <td class="origin">{{ flight.city }}</td>
+            <td class="ident">{{ flight.flightNumber }}</a></td>
             <td class="terminal">{{ flight.terminalId }}</td>
-            <td class="destination">{{ flight.city }}</td>
-            <td class="flightstatus">{{ flight.flightStatusText }}</td>
-            <td class="timesort">{{ flight.flightStatusTime }}</td>
+            <td class="flightstatus">{{ flight.flightOutputStatus }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -72,8 +61,14 @@
 {% block extra_js %}
   <script type="text/javascript">
     $('#arrivals_table').DataTable({
-      'order': []
+      'order': [],
+      "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+      'pageLength': 50,
     });
-    $('#departures_table').DataTable();
+    $('#departures_table').DataTable({
+      'order': [],
+      "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+      'pageLength': 50
+    });
   </script>
 {% endblock %}
