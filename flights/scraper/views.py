@@ -22,8 +22,17 @@ class FlightsView(TemplateView):
         return context
 
 
-class CarrouselView(TemplateView):
-    template_name = 'scraper/carrousel.html'
+class CarouselView(TemplateView):
+    template_name = 'scraper/carousel.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['carousel_data'] = [
+            ('heathrow', 'departures'),
+            ('heathrow', 'arrivals'),
+            ('gatwick', 'departures'),
+            ('gatwick', 'arrivals')]
+        return context
 
 
 class CarouselFlightsView(APIView):
@@ -35,3 +44,16 @@ class CarouselFlightsView(APIView):
              'gatwick': get_gatwick_flights}
         data = g[airport](operation)
         return Response(data)
+
+
+class FlightsAjaxView(TemplateView):
+    template_name = 'scraper/flights_ajax.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        g = {'heathrow': get_heathrow_flights,
+             'gatwick': get_gatwick_flights}
+        airport = self.kwargs['airport']
+        operation = self.kwargs['operation']
+        context['flights'] = g[airport](operation)
+        return context
