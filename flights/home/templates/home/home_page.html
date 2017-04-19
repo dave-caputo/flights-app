@@ -36,7 +36,7 @@
 
     {% block flights_title %}
       <div class="flights-header">
-        <h1 class="flights-title">Flights Now</h1>
+        <h1 class="flights-title">Online Information for Guests</h1>
         <p class="lead flights-description">Flights enroute, landed, departed, and scheduled for your nearby airports.</p>
       </div>
     {% endblock %}
@@ -44,6 +44,7 @@
     <div class="flights-body flights-main">
 
       {% block flight_type %}
+        {% comment %}
         <h3>ARRIVALS:
           <a href="{% url 'data:enroute' %}">Scheduled</a> |
           <a href="{% url 'data:arrived' %}">Actual</a> |
@@ -55,16 +56,28 @@
           <a href="{% url 'data:scheduled_departed' %}">All</a>
         </h3>
         <br />
-        <h1>Scraper:</h1>
-        <h3>ARRIVALS:</h3>
-        <a href="{% url 'scraper:flights' airport='heathrow' operation='arrivals' %}">Heathrow</a> |
-        <a href="{% url 'scraper:flights' airport='gatwick' operation='arrivals' %}">Gatwick</a>
-        <br />
-        <h3>DEPARTURES:</h3>
-        <a href="{% url 'scraper:flights' airport='heathrow' operation='departures' %}">Heathrow</a> |
-        <a href="{% url 'scraper:flights' airport='gatwick' operation='departures' %}">Gatwick</a>
-        <br />
-        <h3><a href="{% url 'scraper:carousel' %}">CAROUSEL</a></h3>
+        {% endcomment %}
+        <h1>Flights</h1>
+        <h3><a href="{% url 'scraper:carousel' %}">Carousel View: All Airports</a></h3>
+        <h3>London Heathrow
+          <small>
+            <a href="{% url 'scraper:flights' airport='heathrow' operation='arrivals' %}">Arrivals</a> |
+            <a href="{% url 'scraper:flights' airport='heathrow' operation='departures' %}">Departures</a>
+          </small>
+        </h3>
+        <h3>London Gatwick
+          <small>
+            <a href="{% url 'scraper:flights' airport='gatwick' operation='arrivals' %}">Arrivals</a> |
+            <a href="{% url 'scraper:flights' airport='gatwick' operation='departures' %}">Departures</a>
+          </small>
+        </h3>
+        <h3>Amsterdam Schiphol
+          <small>
+            <a href="{% url 'scraper:flights' airport='schiphol' operation='arrivals' %}">Arrivals</a> |
+            <a href="{% url 'scraper:flights' airport='schiphol' operation='departures' %}">Departures</a>
+          </small>
+        </h3>
+
 
       {% endblock %}
 

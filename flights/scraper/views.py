@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from scraper.source.heathrow_source import get_heathrow_flights
 from scraper.source.gatwick_source import get_gatwick_flights
+from scraper.source.schiphol_source import get_schiphol_flights
 
 
 class FlightsView(TemplateView):
@@ -15,7 +16,8 @@ class FlightsView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         g = {'heathrow': get_heathrow_flights,
-             'gatwick': get_gatwick_flights}
+             'gatwick': get_gatwick_flights,
+             'schiphol': get_schiphol_flights}
         airport = self.kwargs['airport']
         operation = self.kwargs['operation']
         context['flights'] = g[airport](operation)

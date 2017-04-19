@@ -15,6 +15,7 @@ SECRET_KEY = '^@aruo_ql14%g&rmh@rmz97cjaaxd7ur%wg=v#-7*cq$n7q&=a'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 FLIGHTS_KEY = os.environ.get('flights_KEY')
+SCHIPHOL_KEY = os.environ.get('schiphol_KEY')
 
 DATABASES = {
     'default': {

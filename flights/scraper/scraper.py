@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import logging
 import urllib.request
 import re
+import ssl
 
 
 logger = logging.getLogger('mylogger')
@@ -45,8 +46,24 @@ class FlightScraper():
 
     def build_live_page_list(self, links):
         for link in self.links:
-            html = urllib.request.urlopen(link)
+            # hdr = {
+            #     'Accept': '*/*',
+            #     'Accept-Encoding': 'gzip, deflate, sdch, br',
+            #     'Accept-Language': 'en-GB,en;q=0.8,en-US;q=0.6,es;q=0.4,fr;q=0.2',
+            #     'Connection': 'keep-alive',
+            #     'Host': 'www.schiphol.nl',
+            #     'Referer': 'https://www.schiphol.nl/en/departures/list/',
+            #     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+            #     'X-Requested-With': 'XMLHttpRequest',
+            #     # 'Cookie': '__cfduid=df8f60dcc95121bc9331606f1583a7f9d1490474758; accept-cookie=true; lang=en; _ga=GA1.2.2107117833.1490474759; intercom-id-he372agv=0326c8ff-04b8-4bc8-a348-55b8369ca8b3; _sp_id.5bfd=1e1fdc1e-b414-4eea-8635-77018829f885.1490474760.6.1492535965.1491852861.eb6bd8ff-2044-43d2-9577-db19bf93204f; _sp_ses.5bfd=*',
+            # }
+            # 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'}
+            scontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            html = urllib.request.urlopen(link, context=scontext)
+            # html = urllib.request.urlopen(link)
+
             self.get_page(html)
+            # self.get_page(html, headers=hdr)
         logger.info('{} page(s) were added to the live page_list'.format(
             len(self.page_list)))
 
