@@ -1,14 +1,16 @@
+from django.core.cache import cache
 from django.test import TestCase
 
-from scraper.gatwick_source import testlink, bowlmap, chunkmap
-from scraper.scraper import FlightScraper
+from scraper.source.schiphol_source import get_destinations
+# from scraper.gatwick_source import testlink, bowlmap, chunkmap
+# from scraper.scraper import FlightScraper
 
 
+'''
 f = FlightScraper(testlink, bowlmap, chunkmap)
 
 fields = ['airlineName', 'flightStatusTime', 'city', 'flightNumber',
           'flightStatusText', 'terminalID', 'Gate', 'Notification', 'Pin']
-
 
 class ScraperTest(TestCase):
 
@@ -26,3 +28,13 @@ class ScraperTest(TestCase):
         for i in f.data_list:
             for field in fields:
                 self.assertNotEqual(i[field], 'Not Available')
+'''
+
+
+class SchipolTest(TestCase):
+
+    def test_destinations_are_received_and_cached(self):
+        d = get_destinations()
+        # print(cache.get('destinations'))
+        print(d)
+        self.assertEqual(cache.get('destinations'), d)
