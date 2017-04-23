@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import requests
 import sys
@@ -21,12 +21,12 @@ def get_local_datetime():
     now = utc_now.astimezone(amsterdam_tz)
     local_time = datetime.strftime(now, '%H:%M')
 
-    return (now, local_time)
+    return (now, local_time, amsterdam_tz)
 
 
 def get_response(operation, page=0):
 
-    now, formatted_local_time = get_local_datetime()
+    now, formatted_local_time, amsterdam_tz = get_local_datetime()
 
     # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
@@ -50,15 +50,29 @@ def get_response(operation, page=0):
 
 
 def update_flight_data(flights):
+
+    now, formatted_local_time, amsterdam_tz = get_local_datetime()
+    max_time_limit = now + timedelta(minutes=120)
+
     destinations = cache.get('destinations')
     updated_flight_list = []
     for f in flights:
+
+        str_scheduled_time = f.pop('scheduleTime')
+        t = datetime.strptime(str_scheduled_time, '%H:%M:%S')
+        d = datetime.combine(now.date(), t.time())
+        scheduled_time = amsterdam_tz.localize(d)
+
+        # Stop the loop if max_time_limit is exceeded.
+        if scheduled_time > max_time_limit:
+            updated_flight_list.append("Max_time_exceeded")
+            break
 
         # Consider only Passenger Line services
         if f['serviceType'] != "J":
             continue
 
-        f['scheduledTimestamp'] = f.pop('scheduleTime')
+        f['scheduledTimestamp'] = str_scheduled_time
 
         f['city'] = f['route']['destinations'][0]
 
@@ -117,6 +131,9 @@ def get_schiphol_flights(operation):
 
             # For each flight align keys and values with template.
             flights = update_flight_data(response_data['flights'])
+
+            if flights[-1] == "Max_time_exceeded":
+                break
 
             flight_list += flights
 
