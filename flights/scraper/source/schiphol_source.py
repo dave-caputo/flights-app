@@ -1,23 +1,39 @@
+from datetime import datetime
 import re
 import requests
 import sys
 
+import pytz
+
 from django.conf import settings
 from django.core.cache import cache
+from django.utils import timezone
 
 from scraper.source.utils import format_to_data_table
 
 
 def get_response(operation, page=0):
+
+    utc_now = timezone.now()
+
+    # To get the list of all timezones loop over pytz.all_timezones
+    # More info at https://www.youtube.com/watch?v=eirjjyP2qcQ
+    amsterdam_tz = pytz.timezone('Europe/Amsterdam')
+    now = utc_now.astimezone(amsterdam_tz)
+    local_time = datetime.strftime(now, '%H:%M')
+
+    # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
     querystring = {
         'app_id': '7e07d59a',
         'app_key': settings.SCHIPHOL_KEY,
         'flightdirection': operation[0].upper(),
         'includedelays': 'true',
-        'page': page
+        'page': page,
+        'scheduletime': local_time
     }
     headers = {'resourceversion': 'v3'}
+
     try:
         response = requests.request("GET", url,
                                     headers=headers,
