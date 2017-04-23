@@ -12,8 +12,7 @@ from django.utils import timezone
 from scraper.source.utils import format_to_data_table
 
 
-def get_response(operation, page=0):
-
+def get_local_datetime():
     utc_now = timezone.now()
 
     # To get the list of all timezones loop over pytz.all_timezones
@@ -21,6 +20,13 @@ def get_response(operation, page=0):
     amsterdam_tz = pytz.timezone('Europe/Amsterdam')
     now = utc_now.astimezone(amsterdam_tz)
     local_time = datetime.strftime(now, '%H:%M')
+
+    return (now, local_time)
+
+
+def get_response(operation, page=0):
+
+    now, formatted_local_time = get_local_datetime()
 
     # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
@@ -30,7 +36,7 @@ def get_response(operation, page=0):
         'flightdirection': operation[0].upper(),
         'includedelays': 'true',
         'page': page,
-        'scheduletime': local_time
+        'scheduletime': formatted_local_time
     }
     headers = {'resourceversion': 'v3'}
 
