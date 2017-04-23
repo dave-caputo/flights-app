@@ -13,25 +13,26 @@ from scraper.source.utils import format_to_data_table
 
 
 def get_local_datetime():
-    utc_now = timezone.now()
 
     # To get the list of all timezones loop over pytz.all_timezones
     # More info at https://www.youtube.com/watch?v=eirjjyP2qcQ
+    utc_now = timezone.now()
     amsterdam_tz = pytz.timezone('Europe/Amsterdam')
-
     now = utc_now.astimezone(amsterdam_tz)
-    max_time = now + timedelta(minutes=120)
-    min_time = now - timedelta(minutes=60)
 
-    local_datetime = {
+    local_datetime = {}
+    datetime_data = {
         'now': now,
-        'str_time': datetime.strftime(now, '%H:%M'),
-        'tz': amsterdam_tz,
-        'max_time': max_time,
-        'str_max_time': datetime.strftime(max_time, '%H:%M'),
-        'min_time': min_time,
-        'str_min_time': datetime.strftime(min_time, '%H:%M'),
+        'max_time': now + timedelta(minutes=120),
+        'min_time': now - timedelta(minutes=60),
     }
+
+    # Creates new dict items with time string representations
+    for k, v in datetime_data.items():
+        local_datetime[k] = v
+        local_datetime['str_{}'.format(k)] = datetime.strftime(v, '%H:%M')
+
+    local_datetime['tz'] = amsterdam_tz
 
     return local_datetime
 
