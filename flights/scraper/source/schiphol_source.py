@@ -29,6 +29,8 @@ def get_local_datetime():
 def get_response(operation, page=0):
 
     local_datetime = get_local_datetime()
+    min_time_limit = local_datetime['now'] - timedelta(minutes=60)
+    str_min_time = datetime.strftime(min_time_limit, '%H:%M')
 
     # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
@@ -38,7 +40,7 @@ def get_response(operation, page=0):
         'flightdirection': operation[0].upper(),
         'includedelays': 'true',
         'page': page,
-        'scheduletime': local_datetime['str_time']
+        'scheduletime': str_min_time
     }
     headers = {'resourceversion': 'v3'}
     try:
@@ -54,6 +56,7 @@ def update_flight_data(flights):
 
     local_datetime = get_local_datetime()
     max_time_limit = local_datetime['now'] + timedelta(minutes=120)
+    min_time_limit = local_datetime['now'] - timedelta(minutes=60)
 
     destinations = cache.get('destinations')
     updated_flight_list = []
@@ -65,7 +68,7 @@ def update_flight_data(flights):
         scheduled_datetime = local_datetime['tz'].localize(d)
 
         # Ignore if scheduled time is too early
-        if scheduled_datetime < local_datetime['now']:
+        if scheduled_datetime < min_time_limit:
             continue
 
         # Stop the loop if max_time_limit is exceeded.
