@@ -21,14 +21,14 @@ def get_local_datetime():
     now = utc_now.astimezone(amsterdam_tz)
     str_time = datetime.strftime(now, '%H:%M')
 
-    local_time = {'now': now, 'str_time': str_time, 'tz': amsterdam_tz}
+    local_datetime = {'now': now, 'str_time': str_time, 'tz': amsterdam_tz}
 
-    return local_time
+    return local_datetime
 
 
 def get_response(operation, page=0):
 
-    local_time = get_local_datetime()
+    local_datetime = get_local_datetime()
 
     # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
@@ -38,7 +38,7 @@ def get_response(operation, page=0):
         'flightdirection': operation[0].upper(),
         'includedelays': 'true',
         'page': page,
-        'scheduletime': local_time['str_time']
+        'scheduletime': local_datetime['str_time']
     }
     headers = {'resourceversion': 'v3'}
     try:
@@ -52,20 +52,24 @@ def get_response(operation, page=0):
 
 def update_flight_data(flights):
 
-    local_time = get_local_datetime()
-    max_time_limit = local_time['now'] + timedelta(minutes=120)
+    local_datetime = get_local_datetime()
+    max_time_limit = local_datetime['now'] + timedelta(minutes=120)
 
     destinations = cache.get('destinations')
     updated_flight_list = []
     for f in flights:
 
-        str_scheduled_time = f.pop('scheduleTime')
+        str_scheduled_time = f['scheduleTime']
         t = datetime.strptime(str_scheduled_time, '%H:%M:%S')
-        d = datetime.combine(local_time['now'].date(), t.time())
-        scheduled_time = local_time['tz'].localize(d)
+        d = datetime.combine(local_datetime['now'].date(), t.time())
+        scheduled_datetime = local_datetime['tz'].localize(d)
+
+        # Ignore if scheduled time is too early
+        if scheduled_datetime < local_datetime['now']:
+            continue
 
         # Stop the loop if max_time_limit is exceeded.
-        if scheduled_time > max_time_limit:
+        if scheduled_datetime > max_time_limit:
             updated_flight_list.append("Max_time_exceeded")
             break
 
@@ -73,7 +77,7 @@ def update_flight_data(flights):
         if f['serviceType'] != "J":
             continue
 
-        f['scheduledTimestamp'] = str_scheduled_time
+        f['scheduledTimestamp'] = f.pop('scheduleTime')
 
         f['city'] = f['route']['destinations'][0]
 
