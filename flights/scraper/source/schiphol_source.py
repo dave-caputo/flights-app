@@ -87,9 +87,8 @@ def update_flight_data(flights):
         if f['serviceType'] != "J":
             continue
 
-        f['scheduledTimestamp'] = f.pop('scheduleTime')
-
-        f['city'] = f['route']['destinations'][0]
+        # Key aligned with template and 'seconds' info sliced off.
+        f['scheduledTimestamp'] = f.pop('scheduleTime')[:-3]
 
         # Translate city code to city name.
         route = f.pop('route')
