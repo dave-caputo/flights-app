@@ -19,14 +19,16 @@ def get_local_datetime():
     # More info at https://www.youtube.com/watch?v=eirjjyP2qcQ
     amsterdam_tz = pytz.timezone('Europe/Amsterdam')
     now = utc_now.astimezone(amsterdam_tz)
-    local_time = datetime.strftime(now, '%H:%M')
+    str_time = datetime.strftime(now, '%H:%M')
 
-    return (now, local_time, amsterdam_tz)
+    local_time = {'now': now, 'str_time': str_time, 'tz': amsterdam_tz}
+
+    return local_time
 
 
 def get_response(operation, page=0):
 
-    now, formatted_local_time, amsterdam_tz = get_local_datetime()
+    local_time = get_local_datetime()
 
     # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
@@ -36,10 +38,9 @@ def get_response(operation, page=0):
         'flightdirection': operation[0].upper(),
         'includedelays': 'true',
         'page': page,
-        'scheduletime': formatted_local_time
+        'scheduletime': local_time['str_time']
     }
     headers = {'resourceversion': 'v3'}
-
     try:
         response = requests.request("GET", url,
                                     headers=headers,
@@ -51,8 +52,8 @@ def get_response(operation, page=0):
 
 def update_flight_data(flights):
 
-    now, formatted_local_time, amsterdam_tz = get_local_datetime()
-    max_time_limit = now + timedelta(minutes=120)
+    local_time = get_local_datetime()
+    max_time_limit = local_time['now'] + timedelta(minutes=120)
 
     destinations = cache.get('destinations')
     updated_flight_list = []
@@ -60,8 +61,8 @@ def update_flight_data(flights):
 
         str_scheduled_time = f.pop('scheduleTime')
         t = datetime.strptime(str_scheduled_time, '%H:%M:%S')
-        d = datetime.combine(now.date(), t.time())
-        scheduled_time = amsterdam_tz.localize(d)
+        d = datetime.combine(local_time['now'].date(), t.time())
+        scheduled_time = local_time['tz'].localize(d)
 
         # Stop the loop if max_time_limit is exceeded.
         if scheduled_time > max_time_limit:
