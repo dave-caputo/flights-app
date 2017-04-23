@@ -105,8 +105,54 @@ def update_flight_data(flights):
         f['flightNumber'] = f.pop('flightName')
         f['terminalId'] = f.pop('terminal', 'Not Available')
 
+        # Prepare data for translating status
+        if f['actualOffBlockTime']:
+            aobt = f['actualOffBlockTime'][11:-13]
+        else:
+            aobt = f['scheduledTimestamp']
+
+        if f['publicEstimatedOffBlockTime']:
+            peobt = f['publicEstimatedOffBlockTime'][11:-13]
+        else:
+            peobt = f['scheduledTimestamp']
+
+        if f['actualLandingTime']:
+            alt = f['actualLandingTime'][11:-13]
+        else:
+            alt = f['scheduledTimestamp']
+
+        if f['estimatedLandingTime']:
+            elt = f['estimatedLandingTime'][11:-13]
+        else:
+            elt = f['scheduledTimestamp']
+
+        # Translate status.
         status = f.pop('publicFlightState')
-        f['flightOutputStatus'] = status['flightStates'][0]
+        status = status['flightStates'][0]
+        status_list = {
+            # Arrivals
+            'AIR': 'Expected {}'.format(elt),
+            'ARR': 'Arrived {}'.format(alt),
+            'EXP': 'Expected {}'.format(elt),
+            'FIB': 'Expected {}'.format(elt),
+            'FIR': 'Expected {}'.format(elt),
+            'LND': 'Landed {}'.format(alt),
+
+            # Departures
+            'BRD': 'Boarding - Departing at {}'.format(peobt),
+            'DEL': 'Delayed {}'.format(peobt),
+            'DEP': 'Departed {}'.format(aobt),
+            'CNX': 'Cancelled',
+            'GCH': 'Gate changed - Departing at {}'.format(peobt),
+            'GTO': 'Gate {} open - Departing at {}'.format(f['gate'], peobt),
+            'GCL': 'Gate {} closing - Departing at {}'.format(f['gate'], peobt),
+            'GTD': 'Gate closed - Departing at {}'.format(peobt),
+            'SCH': 'Scheduled',
+            'TOM': 'Delayed tomorrow {}'.format(peobt),
+            'WIL': 'Wait in lounge. Departing at {}'.format(peobt),
+        }
+
+        f['flightOutputStatus'] = status_list.get(status, status)
 
         updated_flight_list.append(f)
 
@@ -148,7 +194,7 @@ def get_schiphol_flights(operation):
             # For each flight align keys and values with template.
             flights = update_flight_data(response_data['flights'])
 
-            if flights[-1] == "Max_time_exceeded":
+            if flights and flights[-1] == "Max_time_exceeded":
                 break
 
             flight_list += flights
