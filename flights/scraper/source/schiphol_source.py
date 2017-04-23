@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from operator import itemgetter
 import re
 import requests
 import sys
@@ -49,7 +50,8 @@ def get_response(operation, page=0):
         'flightdirection': operation[0].upper(),
         'includedelays': 'true',
         'page': page,
-        'scheduletime': local_datetime['str_min_time']
+        'scheduletime': local_datetime['str_min_time'],
+        'sort': '+scheduleTime'  # No more filters available: API bug!
     }
     headers = {'resourceversion': 'v3'}
     try:
@@ -155,7 +157,7 @@ def get_schiphol_flights(operation):
     if flight_list:
         cache.set('schipol_{}'.format(operation), flight_list, None)
 
-    return flight_list
+    return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
 
 def get_destinations():
