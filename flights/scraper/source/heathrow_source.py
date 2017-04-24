@@ -31,7 +31,7 @@ links = {
 
 
 @format_to_data_table
-def get_heathrow_flights(operation):
+def get_heathrow_flights(operation, carousel=False):
 
     #    utc_now = timezone.now()
     #    london_tz = pytz.timezone('Europe/London')

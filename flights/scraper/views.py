@@ -33,7 +33,9 @@ class CarouselView(TemplateView):
             ('heathrow', 'departures'),
             ('heathrow', 'arrivals'),
             ('gatwick', 'departures'),
-            ('gatwick', 'arrivals')]
+            ('gatwick', 'arrivals'),
+            ('schiphol', 'departures'),
+            ('schiphol', 'arrivals')]
         return context
 
 
@@ -43,7 +45,8 @@ class CarouselFlightsView(APIView):
 
     def get(self, request, format=None, operation=None, airport=None):
         g = {'heathrow': get_heathrow_flights,
-             'gatwick': get_gatwick_flights}
+             'gatwick': get_gatwick_flights,
+             'schiphol': get_schiphol_flights}
         data = g[airport](operation)
         return Response(data)
 
@@ -54,8 +57,9 @@ class FlightsAjaxView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         g = {'heathrow': get_heathrow_flights,
-             'gatwick': get_gatwick_flights}
+             'gatwick': get_gatwick_flights,
+             'schiphol': get_schiphol_flights}
         airport = self.kwargs['airport']
         operation = self.kwargs['operation']
-        context['flights'] = g[airport](operation)
+        context['flights'] = g[airport](operation, carousel=True)
         return context

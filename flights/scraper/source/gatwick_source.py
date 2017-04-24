@@ -37,7 +37,7 @@ gatwick_test_datamap = [
 
 
 @format_to_data_table
-def get_gatwick_flights(operation):
+def get_gatwick_flights(operation, carousel=False):
     op_links = {
         'arrivals': gatwick_arrivals_live_links,
         'departures': gatwick_departures_live_links}

@@ -13,7 +13,7 @@ from django.utils import timezone
 from scraper.source.utils import format_to_data_table, merge_codeshare_flights
 
 
-def get_local_datetime():
+def get_local_datetime(max_interval=None, min_interval=None):
 
     # To get the list of all timezones loop over pytz.all_timezones
     # More info at https://www.youtube.com/watch?v=eirjjyP2qcQ
@@ -21,26 +21,28 @@ def get_local_datetime():
     amsterdam_tz = pytz.timezone('Europe/Amsterdam')
     now = utc_now.astimezone(amsterdam_tz)
 
-    local_datetime = {}
-    datetime_data = {
+    local_datetime = {
         'now': now,
-        'max_time': now + timedelta(minutes=120),
-        'min_time': now - timedelta(minutes=60),
+        'time_limits': False,
+        'tz': amsterdam_tz
     }
 
-    # Creates new dict items with time string representations
-    for k, v in datetime_data.items():
-        local_datetime[k] = v
-        local_datetime['str_{}'.format(k)] = datetime.strftime(v, '%H:%M')
+    if max_interval and min_interval:
+        str_time = lambda x: datetime.strftime(x, '%H:%M')
+        local_datetime['time_limits'] = True
 
-    local_datetime['tz'] = amsterdam_tz
+        max_time = now + timedelta(minutes=max_interval)
+        local_datetime['max_time'] = max_time
+        local_datetime['str_max_time'] = str_time(max_time)
+
+        min_time = now - timedelta(minutes=min_interval)
+        local_datetime['min_time'] = min_time
+        local_datetime['str_min_time'] = str_time(min_time)
 
     return local_datetime
 
 
-def get_response(operation, page=0):
-
-    local_datetime = get_local_datetime()
+def get_response(operation, local_datetime, page=0):
 
     # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
@@ -50,7 +52,7 @@ def get_response(operation, page=0):
         'flightdirection': operation[0].upper(),
         'includedelays': 'true',
         'page': page,
-        'scheduletime': local_datetime['str_min_time'],
+        'scheduletime': local_datetime.get('str_min_time', None),
         'sort': '+scheduleTime'  # No more filters available: API bug!
     }
     headers = {'resourceversion': 'v3'}
@@ -63,12 +65,11 @@ def get_response(operation, page=0):
         print('Unable to get data from page {}'.format(page))
 
 
-def update_flight_data(flights):
-
-    local_datetime = get_local_datetime()
+def update_flight_data(flights, local_datetime):
 
     destinations = cache.get('destinations')
     updated_flight_list = []
+
     for f in flights:
 
         str_scheduled_time = f['scheduleTime']
@@ -76,14 +77,15 @@ def update_flight_data(flights):
         d = datetime.combine(local_datetime['now'].date(), t.time())
         scheduled_datetime = local_datetime['tz'].localize(d)
 
-        # Ignore if scheduled time is too early
-        if scheduled_datetime < local_datetime['min_time']:
-            continue
+        if local_datetime['time_limits']:
+            # Ignore if scheduled time is too early
+            if scheduled_datetime < local_datetime['min_time']:
+                continue
 
-        # Stop the loop if max_time_limit is exceeded.
-        if scheduled_datetime > local_datetime['max_time']:
-            updated_flight_list.append("Max_time_exceeded")
-            break
+            # Stop the loop if max_time_limit is exceeded.
+            if scheduled_datetime > local_datetime['max_time']:
+                updated_flight_list.append("Max_time_exceeded")
+                break
 
         # Consider only Passenger Line services
         if f['serviceType'] != "J":
@@ -159,8 +161,8 @@ def update_flight_data(flights):
     return updated_flight_list
 
 
-def get_flight_page_count(operation):
-    response = get_response(operation)
+def get_flight_page_count(operation, local_datetime):
+    response = get_response(operation, local_datetime)
     link = response.headers['Link']
     page_count = re.findall(r'(?<=page\=)\d+', link)[0]
     return int(page_count)
@@ -168,21 +170,19 @@ def get_flight_page_count(operation):
 
 @format_to_data_table
 @merge_codeshare_flights
-def get_schiphol_flights(operation):
+def get_schiphol_flights(operation, carousel=False):
+
+    if carousel:
+        local_datetime = get_local_datetime(max_interval=120, min_interval=60)
+    else:
+        local_datetime = get_local_datetime()
+
     flight_list = []
-    page_count = get_flight_page_count(operation)
+    page_count = get_flight_page_count(operation, local_datetime)
     page = 0
 
-    # try:
-    #     destinations = cache.get('destinations')
-    #     flight_list = cache.get('schiphol_{}'.format(operation))
-    #     return flight_list
-
-    # except KeyError:
-    #    print("Unable to obtain cached Schiphol destinations or flights.")
-
     for page in range(0, page_count + 1):
-        response = get_response(operation, page)
+        response = get_response(operation, local_datetime, page)
 
         # Check response type
         if response.status_code == 500:
@@ -193,7 +193,8 @@ def get_schiphol_flights(operation):
             response_data = response.json()
 
             # For each flight align keys and values with template.
-            flights = update_flight_data(response_data['flights'])
+            flights = update_flight_data(response_data['flights'],
+                                         local_datetime)
 
             if flights and flights[-1] == "Max_time_exceeded":
                 break
@@ -204,8 +205,7 @@ def get_schiphol_flights(operation):
     if flight_list:
         cache.set('schipol_{}'.format(operation), flight_list, None)
 
-    return sorted(flight_list, key=itemgetter('scheduledTimestamp',
-                                              'city', 'terminalId'))
+    return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
 
 def get_destinations():
