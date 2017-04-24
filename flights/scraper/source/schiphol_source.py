@@ -46,7 +46,7 @@ def get_response(operation, local_datetime, page=0):
 
     # More info at https://developer.schiphol.nl/apis/flight-api/flights
     url = 'https://api.schiphol.nl/public-flights/flights'
-    querystring = {
+    p = {
         'app_id': '7e07d59a',
         'app_key': settings.SCHIPHOL_KEY,
         'flightdirection': operation[0].upper(),
@@ -55,11 +55,9 @@ def get_response(operation, local_datetime, page=0):
         'scheduletime': local_datetime.get('str_min_time', None),
         'sort': '+scheduleTime'  # No more filters available: API bug!
     }
-    headers = {'resourceversion': 'v3'}
+    h = {'resourceversion': 'v3'}
     try:
-        response = requests.request("GET", url,
-                                    headers=headers,
-                                    params=querystring)
+        response = requests.request("GET", url, headers=h, params=p)
         return response
     except requests.exceptions.ConnectionError as error:
         print('Unable to get data from page {}'.format(page))
@@ -78,9 +76,6 @@ def update_flight_data(flights, local_datetime):
         scheduled_datetime = local_datetime['tz'].localize(d)
 
         if local_datetime['time_limits']:
-            # Ignore if scheduled time is too early
-            if scheduled_datetime < local_datetime['min_time']:
-                continue
 
             # Stop the loop if max_time_limit is exceeded.
             if scheduled_datetime > local_datetime['max_time']:
@@ -209,17 +204,18 @@ def get_schiphol_flights(operation, carousel=False):
 
 
 def get_destinations():
+
     url = 'https://api.schiphol.nl/public-flights/destinations'
-    querystring = {
+    p = {
         'app_id': '7e07d59a',
         'app_key': settings.SCHIPHOL_KEY,
         'sort': '+city'
     }
-    headers = {
+    h = {
         'resourceversion': 'v1'
     }
     try:
-        response = requests.request("GET", url, headers=headers, params=querystring)
+        response = requests.request("GET", url, headers=h, params=p)
     except requests.exceptions.ConnectionError as error:
         print(error)
         sys.exit()
@@ -230,18 +226,18 @@ def get_destinations():
         destinations = d['destinations']
         for page in range(1, int(pages[0]) + 1):
             url = 'https://api.schiphol.nl/public-flights/destinations'
-            querystring = {
+            p = {
                 'app_id': '7e07d59a',
                 'app_key': settings.SCHIPHOL_KEY,
                 'sort': '+city',
                 'page': page
             }
 
-            headers = {
+            h = {
                 'resourceversion': 'v1'
             }
             try:
-                response = requests.request("GET", url, headers=headers, params=querystring)
+                response = requests.request("GET", url, headers=h, params=p)
             except requests.exceptions.ConnectionError as error:
                 print(error)
                 sys.exit()
