@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 
-from scraper.source.utils import format_to_data_table
+from scraper.source.utils import format_to_data_table, merge_codeshare_flights
 
 
 def get_local_datetime():
@@ -139,17 +139,17 @@ def update_flight_data(flights):
             'LND': 'Landed {}'.format(alt),
 
             # Departures
-            'BRD': 'Boarding - Departing at {}'.format(peobt),
+            'BRD': 'Boarding - Departing {}'.format(peobt),
             'DEL': 'Delayed {}'.format(peobt),
             'DEP': 'Departed {}'.format(aobt),
             'CNX': 'Cancelled',
-            'GCH': 'Gate changed - Departing at {}'.format(peobt),
-            'GTO': 'Gate {} open - Departing at {}'.format(f['gate'], peobt),
-            'GCL': 'Gate {} closing - Departing at {}'.format(f['gate'], peobt),
-            'GTD': 'Gate closed - Departing at {}'.format(peobt),
+            'GCH': 'Gate changed - Departing {}'.format(peobt),
+            'GTO': 'Gate {} open - Departing {}'.format(f['gate'], peobt),
+            'GCL': 'Gate {} closing - Departing {}'.format(f['gate'], peobt),
+            'GTD': 'Gate closed - Departing {}'.format(peobt),
             'SCH': 'Scheduled',
             'TOM': 'Delayed tomorrow {}'.format(peobt),
-            'WIL': 'Wait in lounge. Departing at {}'.format(peobt),
+            'WIL': 'Wait in lounge. Departing {}'.format(peobt),
         }
 
         f['flightOutputStatus'] = status_list.get(status, status)
@@ -167,6 +167,7 @@ def get_flight_page_count(operation):
 
 
 @format_to_data_table
+@merge_codeshare_flights
 def get_schiphol_flights(operation):
     flight_list = []
     page_count = get_flight_page_count(operation)
@@ -203,7 +204,8 @@ def get_schiphol_flights(operation):
     if flight_list:
         cache.set('schipol_{}'.format(operation), flight_list, None)
 
-    return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
+    return sorted(flight_list, key=itemgetter('scheduledTimestamp',
+                                              'city', 'terminalId'))
 
 
 def get_destinations():

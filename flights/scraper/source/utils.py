@@ -47,3 +47,23 @@ def filter_flight_list(flight_list, operation, min_arrival=30, max_arrival=60,
             continue
         data.append(f)
     return data
+
+
+def merge_codeshare_flights(func):
+    def wrapper(*args, **kwargs):
+        flight_list = func(*args, **kwargs)
+        merged_list = []
+        for i, f in enumerate(flight_list):
+            pf = flight_list[i - 1]
+
+            # Find the codeshare fields that repeat
+            sch_time_rep = f['scheduledTimestamp'] == pf['scheduledTimestamp']
+            city_rep = f['city'] == pf['city']
+            status_rep = f['flightOutputStatus'] == pf['flightOutputStatus']
+
+            if merged_list and city_rep and status_rep and sch_time_rep:
+                merged_list[-1]['flightNumber'] += ', {}'.format(f['flightNumber'])
+                continue
+            merged_list.append(f)
+        return merged_list
+    return wrapper
