@@ -8,8 +8,11 @@ import pytz
 
 from django.conf import settings
 from django.core.cache import cache
+
 from django.utils import timezone
 
+from cities.models import City
+from cities.utils import SchipholCityManager
 from scraper.source.utils import format_to_data_table, merge_codeshare_flights
 
 
@@ -70,6 +73,8 @@ def update_flight_data(flights, local_datetime):
     cache_block_size = 20
     updated_flight_list = []
 
+    city_mgr = SchipholCityManager()
+
     for f in flights:
 
         str_scheduled_time = f['scheduleTime']
@@ -95,6 +100,11 @@ def update_flight_data(flights, local_datetime):
         route = f.pop('route')
         city_code = route['destinations'][0]
         try:
+            f['city'] = City.objects.get(iata=city_code).city
+        except:
+            f['city'] = city_mgr.get_and_save_city(iata=city_code)
+        '''
+        try:
             for block in range(20, pages_cached + 1, cache_block_size):
                 first = cache.get('dest_{}_start'.format(block))
                 print(first)
@@ -107,8 +117,9 @@ def update_flight_data(flights, local_datetime):
                         dest['city'] for dest in block_data if dest['iata'] == city_code
                     ).__next__()
         except StopIteration:
-            f['city'] = 'Not Available'
 
+            f['city'] = 'Not Available'
+        '''
         f['flightNumber'] = f.pop('flightName')
         f['terminalId'] = f.pop('terminal', 'Not Available')
 
@@ -208,11 +219,12 @@ def get_schiphol_flights(operation, carousel=False):
 
     # Cache if the flight list is not empty:
     if flight_list:
-        cache.set('schipol_{}'.format(operation), flight_list)
+        cache.set('schiphol_{}'.format(operation), flight_list)
 
     return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
 
+'''
 def get_destinations():
 
     url = 'https://api.schiphol.nl/public-flights/destinations'
@@ -297,3 +309,4 @@ def get_destinations():
         return 'Destinations successfully cached'
     else:
         print(response)
+'''
