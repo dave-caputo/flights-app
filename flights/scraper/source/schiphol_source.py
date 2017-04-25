@@ -65,7 +65,9 @@ def get_response(operation, local_datetime, page=0):
 
 def update_flight_data(flights, local_datetime):
 
-    destinations = cache.get('destinations')
+    # destinations = cache.get('destinations')
+    pages_cached = cache.get('dest_pages_cached')
+    cache_block_size = 20
     updated_flight_list = []
 
     for f in flights:
@@ -93,9 +95,17 @@ def update_flight_data(flights, local_datetime):
         route = f.pop('route')
         city_code = route['destinations'][0]
         try:
-            f['city'] = (
-                d['city'] for d in destinations if d['iata'] == city_code
-            ).__next__()
+            for block in range(20, pages_cached + 1, cache_block_size):
+                first = cache.get('dest_{}_start'.format(block))
+                print(first)
+                last = cache.get('dest_{}_end'.format(block))
+
+                if city_code >= first and city_code <= last:
+                    block_data = cache.get('dest_{}'.format(block))
+
+                    f['city'] = (
+                        dest['city'] for dest in block_data if dest['iata'] == city_code
+                    ).__next__()
         except StopIteration:
             f['city'] = 'Not Available'
 
@@ -198,7 +208,7 @@ def get_schiphol_flights(operation, carousel=False):
 
     # Cache if the flight list is not empty:
     if flight_list:
-        cache.set('schipol_{}'.format(operation), flight_list, None)
+        cache.set('schipol_{}'.format(operation), flight_list)
 
     return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
@@ -209,41 +219,81 @@ def get_destinations():
     p = {
         'app_id': '7e07d59a',
         'app_key': settings.SCHIPHOL_KEY,
-        'sort': '+city'
+        'sort': '+iata'
     }
     h = {
         'resourceversion': 'v1'
     }
-    try:
-        response = requests.request("GET", url, headers=h, params=p)
-    except requests.exceptions.ConnectionError as error:
-        print(error)
-        sys.exit()
+
+    response = requests.request("GET", url, headers=h, params=p)
     if response.status_code == 200:
+
+        # Obtain from headers and cache the number of pages
         link = response.headers['Link']
-        pages = re.findall(r'(?<=page\=)\d+', link)
-        d = response.json()
-        destinations = d['destinations']
-        for page in range(1, int(pages[0]) + 1):
-            url = 'https://api.schiphol.nl/public-flights/destinations'
-            p = {
-                'app_id': '7e07d59a',
-                'app_key': settings.SCHIPHOL_KEY,
-                'sort': '+city',
-                'page': page
-            }
+        page_count = int(re.findall(r'(?<=page\=)\d+', link)[0])
+        cache.set('dest_page_count', page_count)
+        print('Page count obtained and cached: {}'.format(cache.get('dest_page_count')))
 
-            h = {
-                'resourceversion': 'v1'
-            }
-            try:
+        # Set how data will be cached
+        page_block = []
+        page_block_size = 20
+
+        for page in range(1, page_count + 1):
+
+            # Include page as a request parameters
+            p['page'] = page
+
+            # Retry until response status code 200
+            attempt = 0
+            valid_response = False
+            while not valid_response:
                 response = requests.request("GET", url, headers=h, params=p)
-            except requests.exceptions.ConnectionError as error:
-                print(error)
-                sys.exit()
-            if response.status_code == 200:
-                d = response.json()
-                destinations += d['destinations']
+                print(response)
+                if response.status_code == 200:
+                    valid_response = True
+                attempt += 1
+                if attempt == 30:
+                    continue
 
-        cache.set('destinations', destinations, None)
-        return destinations
+            d = response.json()
+
+            updated_dest = []
+            for item in d['destinations']:
+                u = {'iata': item['iata'], 'city': item['city']}
+                updated_dest.append(u)
+
+            page_block += updated_dest
+
+            if page % page_block_size == 0 or page == page_count:
+
+                # Set up cache key names
+                key = 'dest_{}'.format(page)
+                timestamp_key = key + '_timestamp'
+                start_key = key + '_start'
+                end_key = key + '_end'
+
+                s = page_block[0]['iata']
+                if not s:
+                    s = 'ZZZ'
+
+                e = page_block[-1]['iata']
+                if not e:
+                    e = 'ZZZ'
+
+                # Set cache values
+                cache.set(key, page_block)
+                cache.set(timestamp_key, timezone.now())
+                cache.set(start_key, )
+                cache.set(end_key, page_block[-1]['iata'])
+
+                cache.set('dest_pages_cached', page)
+
+                msg = 'Page {}: {} destinations were cached.'
+                print(msg.format(page, len(page_block)))
+                print('Block start: {}. End:{}.'.format(cache.get(start_key), cache.get(end_key)))
+
+                page_block = []
+
+        return 'Destinations successfully cached'
+    else:
+        print(response)

@@ -31,6 +31,9 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'flights_cache_table',
+        'OPTIONS': {'MAX_ENTRIES': 10000},
+        'TIMEOUT': None
+
     }
 }
 
