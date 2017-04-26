@@ -35,28 +35,32 @@ class SchipholCityManager:
         params = self.params
 
         if iata:
-            url = self.url + '/iata'
+            print('Setting parameters for sending city request for {}'.format(iata))
+            url = self.url + '/{}'.format(iata)
             del params['sort']
             del params['page']
-            params['iata'] = iata
 
         while not valid_response:
             response = requests.request("GET", url, headers=headers,
                                         params=params)
+            print('Cities: Request status: {}'.format(response.status_code))
             if response.status_code == 200:
                 valid_response = True
             attempt += 1
             if attempt == self.max_request_attempts:
-                continue
+                raise ConnectionError
+        print('Match found. Attempts made: {}'.format(attempt))
         return response
 
     def get_and_save_city(self, iata):
 
         response = self.make_request(iata=iata)
         data = response.json()
-        city = data['destination']['city']
+        print(data)
+        city = data['city']
         try:
             City.objects.create(iata=iata, city=city)
+            print('New city {} saved in the database'.format(city))
         except IntegrityError:
             pass
         return city
