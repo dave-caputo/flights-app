@@ -44,6 +44,7 @@ class SchipholFlightManager:
         self.max_request_attempts = 30
 
 
+
     def get_local_datetime(self):
         '''
         Returns the local datetime based on the UTC time and the local
@@ -315,19 +316,24 @@ class SchipholFlightManager:
             print('Cached flight list size: {}kb.'.format(kbsize))
 
 
-    def set_min_and_maximum_page(self):
+    def set_start_and_end_page(self):
+        '''
+        Finds the start and end pages in the list of all scheduled
+        flights.
+        '''
         flight_list = cache.get('schiphol_{}'.format(self.operation))
-        for item in flight_list:
-            if item['scheduleTime'][:-3] >= self.str_min_datetime:
-                self.min_page = item['page']
-                break
+        if flight_list:
+            for item in flight_list:
+                if item['scheduleTime'][:-3] >= self.str_min_datetime:
+                    self.start_page = item['page']
+                    break
 
-        for item in reversed(flight_list):
-            if item['scheduleTime'][:-3] <= self.str_max_datetime:
-                self.max_page = item['page']
-                break
-
-
+            for item in reversed(flight_list):
+                if item['scheduleTime'][:-3] <= self.str_max_datetime:
+                    self.end_page = item['page']
+                    break
+        print('Schiphol request start page: {}'.format(self.start_page))
+        print('Schiphol request end page: {}'.format(self.end_page))
 
 
 
