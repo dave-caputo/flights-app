@@ -23,9 +23,8 @@ class SchipholFlightManager:
     return template-friendly flights lists.
     '''
 
-    def __init__(self, operation, carousel):
-        self.operation = operation
-        self.carousel = carousel
+    def __init__(self, operation):
+        self.operation = operation.lower()
         self.local_timezone = pytz.timezone('Europe/Amsterdam')
         self.local_datetime = self.get_local_datetime()
         self.time_limits = False
@@ -67,9 +66,11 @@ class SchipholFlightManager:
             str_time = lambda x: datetime.strftime(x, '%H:%M')
             self.str_max_datetime = str_time(self.max_datetime)
             self.str_min_datetime = str_time(self.min_datetime)
+            print('Schiphol max time set to {}'.format(self.str_max_datetime))
+            print('Schiphol min time set to {}'.format(self.str_min_datetime))
 
 
-    def make_request(self, page=None, str_time=0):
+    def make_request(self, page=None):
         '''
         Makes a request to the Schiphol Airport API based on the
         object's url, headers and params. Returns a response object.
@@ -83,7 +84,8 @@ class SchipholFlightManager:
 
         params['flightdirection'] = self.operation[0].upper()
         params['page'] = page
-        params['scheduleTime'] = str_time
+        if self.str_min_datetime:
+            params['scheduleTime'] = self.str_min_datetime
 
         while not valid_response:
             response = requests.request("GET", url, headers=headers,
@@ -233,13 +235,14 @@ class SchipholFlightManager:
         '''
         Makes an API request to obtain from the headers the page count.
         '''
+
         response = self.make_request()
 
         # Obtain from headers and cache the number of pages
         link = response.headers['Link']
         str_page_count = re.findall(r'(?<=page\=)\d+', link)[0]
         page_count = int(str_page_count)
-        print('Page count successfully retrieved: {}'.format(page_count))
+        print('Page count for {}: {}'.format(self.operation, page_count))
 
         return page_count
 
@@ -251,17 +254,15 @@ class SchipholFlightManager:
         Returns a template-friendly sorted flight list to display in
         carousel or full list views.
         '''
-        if self.carousel:
-            self.set_time_limits(max_minutes=120, min_minutes=60)
+
+        self.set_time_limits(max_minutes=120, min_minutes=60)
 
         flight_list = []
         page_count = self.get_page_count()
-        # page_count = 10
-        # page = 0
+        print('Schiphol total page count: {}'.format(page_count))
 
         for page in range(0, page_count + 1):
-            response = self.make_request(page=page,
-                                         str_time=self.str_min_datetime)
+            response = self.make_request(page=page)
             data = response.json()
             data = data['flights']
             print('Data obtained for page {}'.format(page))
@@ -277,13 +278,65 @@ class SchipholFlightManager:
         return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
 
+    def get_and_cache_flight_data(self, page_count=None):
+        '''
+        Requests and caches all flights scheduled for a given day.
+        '''
 
-def get_schiphol_flights(operation, carousel=False):
+        cache_key = 'schiphol_{}'.format(self.operation)
+
+        if not page_count:
+            page_count = self.get_page_count()
+
+        for page in range(0, page_count + 1):
+            response = self.make_request(page=page)
+
+            data = response.json()['flights']
+            for entry in data:
+                entry['page'] = page
+
+            if page == 0:
+                cache.set(cache_key, data, None)
+
+            else:
+                cached_flights = cache.get(cache_key)
+                cached_flights += data
+                cache.set(cache_key, cached_flights, None)
+
+            cached_flights = cache.get(cache_key)
+            cache_count = len(cached_flights)
+            print('Cache updated. Flights in cache: {}'.format(
+                cache_count))
+
+            print('Data obtained for page {}'.format(page))
+
+            kbsize = sys.getsizeof(cached_flights) / 1000
+            kbsize = round(kbsize, 1)
+            print('Cached flight list size: {}kb.'.format(kbsize))
+
+
+    def set_min_and_maximum_page(self):
+        flight_list = cache.get('schiphol_{}'.format(self.operation))
+        for item in flight_list:
+            if item['scheduleTime'][:-3] >= self.str_min_datetime:
+                self.min_page = item['page']
+                break
+
+        for item in reversed(flight_list):
+            if item['scheduleTime'][:-3] <= self.str_max_datetime:
+                self.max_page = item['page']
+                break
+
+
+
+
+
+def get_schiphol_flights(operation):
     '''
     Instantiates a SchipolFlightManager object specifying the operation
     and whether the data should be customised for displaying in a
     carousel.
     '''
-    m = SchipholFlightManager(operation, carousel)
+    m = SchipholFlightManager(operation)
     flights = m.get_flights()
     return flights

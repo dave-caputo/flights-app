@@ -61,5 +61,5 @@ class FlightsAjaxView(TemplateView):
              'schiphol': get_schiphol_flights}
         airport = self.kwargs['airport']
         operation = self.kwargs['operation']
-        context['flights'] = g[airport](operation, carousel=True)
+        context['flights'] = g[airport](operation)
         return context
