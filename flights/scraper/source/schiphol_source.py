@@ -280,13 +280,17 @@ class SchipholFlightManager:
         return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
 
-    def get_and_cache_flight_data(self, page_count=None):
+    def get_and_save_flight_data(self, page_count=None, test=False):
         '''
         Requests and caches all flights scheduled for a given day.
         '''
+        if test:
+            pickle_name = 'scraper/tests/schiphol_{}.pickle'.format(
+                self.operation)
 
-        pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
-            self.operation)
+        else:
+            pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
+                self.operation)
 
         if not page_count:
             page_count = self.get_page_count()
@@ -316,16 +320,17 @@ class SchipholFlightManager:
             kbsize = round(kbsize, 1)
             print('Cached flight list size: {}kb.'.format(kbsize))
 
-        # with open(pickle_name, 'rb') as p:
-        #     pickled_flights = pickle.load(pickle_name, p)
-        # print('Pickled file item count: {}.'.format(len(pickled_flights)))
-
     def set_start_and_end_page(self):
         '''
         Finds the start and end pages in the list of all scheduled
         flights.
         '''
-        flight_list = cache.get('schiphol_{}'.format(self.operation))
+        pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
+            self.operation)
+
+        with open(pickle_name, 'rb') as u:
+                flight_list = pickle.load(u)
+
         if flight_list:
             for item in flight_list:
                 if item['scheduleTime'][:-3] >= self.str_min_datetime:
