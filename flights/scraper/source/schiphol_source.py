@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from operator import itemgetter
+import pickle
 import re
 import requests
 import sys
@@ -284,37 +285,40 @@ class SchipholFlightManager:
         Requests and caches all flights scheduled for a given day.
         '''
 
-        cache_key = 'schiphol_{}'.format(self.operation)
+        pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
+            self.operation)
 
         if not page_count:
             page_count = self.get_page_count()
 
+        all_flights = []
         for page in range(0, page_count + 1):
             response = self.make_request(page=page)
 
             data = response.json()['flights']
+            print('Data obtained for page {}'.format(page))
+
             for entry in data:
                 entry['page'] = page
 
-            if page == 0:
-                cache.set(cache_key, data, None)
+            all_flights += data
 
-            else:
-                cached_flights = cache.get(cache_key)
-                cached_flights += data
-                cache.set(cache_key, cached_flights, None)
+            with open(pickle_name, 'wb') as p:
+                pickle.dump(all_flights, p)
 
-            cached_flights = cache.get(cache_key)
-            cache_count = len(cached_flights)
-            print('Cache updated. Flights in cache: {}'.format(
-                cache_count))
+            with open(pickle_name, 'rb') as u:
+                pickled_flights = pickle.load(u)
 
-            print('Data obtained for page {}'.format(page))
+            print('Flights saved: {}'.format(len(pickled_flights)))
 
-            kbsize = sys.getsizeof(cached_flights) / 1000
+
+            kbsize = sys.getsizeof(pickled_flights) / 1000
             kbsize = round(kbsize, 1)
             print('Cached flight list size: {}kb.'.format(kbsize))
 
+        # with open(pickle_name, 'rb') as p:
+        #     pickled_flights = pickle.load(pickle_name, p)
+        # print('Pickled file item count: {}.'.format(len(pickled_flights)))
 
     def set_start_and_end_page(self):
         '''
