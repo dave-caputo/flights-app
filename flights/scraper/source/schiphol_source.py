@@ -280,23 +280,36 @@ class SchipholFlightManager:
         return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
 
-    def get_and_save_flight_data(self, page_count=None, test=False):
+    def get_and_save_flight_data(self, page_count=None, update=False,
+                                 test=False):
         '''
         Requests and caches all flights scheduled for a given day.
         '''
-        if test:
-            pickle_name = 'scraper/tests/schiphol_{}.pickle'.format(
-                self.operation)
 
+        if update:
+            update_str = 'updated'
         else:
-            pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
-                self.operation)
+            update_str = 'schiphol'
+        pickle_name = '{}_{}.pickle'.format(update_str, self.operation)
+
+        if test:
+            pickle_name = 'scraper/tests/' + pickle_name
+        else:
+            pickle_name = 'scraper/source/' + pickle_name
 
         if not page_count:
             page_count = self.get_page_count()
 
         all_flights = []
-        for page in range(0, page_count + 1):
+
+        if update:
+            start_page = self.start_page
+            end_page = self.end_page
+        else:
+            start_page = 0
+            end_page = self.page_count
+
+        for page in range(start_page, end_page + 1):
             response = self.make_request(page=page)
 
             data = response.json()['flights']
@@ -320,13 +333,18 @@ class SchipholFlightManager:
             kbsize = round(kbsize, 1)
             print('Cached flight list size: {}kb.'.format(kbsize))
 
-    def set_start_and_end_page(self):
+    def set_start_and_end_page(self, test=False):
         '''
         Finds the start and end pages in the list of all scheduled
         flights.
         '''
-        pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
-            self.operation)
+        if test:
+            pickle_name = 'scraper/tests/schiphol_{}.pickle'.format(
+                self.operation)
+
+        else:
+            pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
+                self.operation)
 
         with open(pickle_name, 'rb') as u:
                 flight_list = pickle.load(u)
@@ -341,8 +359,10 @@ class SchipholFlightManager:
                 if item['scheduleTime'][:-3] <= self.str_max_datetime:
                     self.end_page = item['page']
                     break
-        print('Schiphol request start page: {}'.format(self.start_page))
-        print('Schiphol request end page: {}'.format(self.end_page))
+        print('Schiphol {} request start page: {}'.format(
+            self.operation, self.start_page))
+        print('Schiphol {} request end page: {}'.format(
+            self.operation, self.end_page))
 
 
 
