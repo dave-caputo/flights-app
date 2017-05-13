@@ -280,34 +280,33 @@ class SchipholFlightManager:
         return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
 
 
-    def get_and_save_flight_data(self, page_count=None, update=False,
+    def get_and_save_flight_data(self, pkl_prefix='/scraper/source/',
+                                 page_count=None, action='sch_base',
                                  test=False):
         '''
         Requests and caches all flights scheduled for a given day.
+        Actions:
+        * 'sch_base': Saves a list of all flights as received from API.
+        * 'sch_update': Saves a list of flights within a specified range of
+          pages.
+        * 'live': Saves a template-friendly list which merges the base
+          and update lists.
+
         '''
-
-        if update:
-            update_str = 'updated'
-        else:
-            update_str = 'schiphol'
-        pickle_name = '{}_{}.pickle'.format(update_str, self.operation)
-
-        if test:
-            pickle_name = 'scraper/tests/' + pickle_name
-        else:
-            pickle_name = 'scraper/source/' + pickle_name
+        pkl_name = '{}_{}.pickle'.format(action, self.operation)
+        pkl_path = settings.BASE_DIR + pkl_prefix + pkl_name
 
         if not page_count:
             page_count = self.get_page_count()
 
         all_flights = []
 
-        if update:
+        if action == 'update':
             start_page = self.start_page
             end_page = self.end_page
         else:
             start_page = 0
-            end_page = self.page_count
+            end_page = page_count
 
         for page in range(start_page, end_page + 1):
             response = self.make_request(page=page)
@@ -320,33 +319,27 @@ class SchipholFlightManager:
 
             all_flights += data
 
-            with open(pickle_name, 'wb') as p:
+            with open(pkl_path, 'wb') as p:
                 pickle.dump(all_flights, p)
 
-            with open(pickle_name, 'rb') as u:
-                pickled_flights = pickle.load(u)
+            with open(pkl_path, 'rb') as u:
+                flight_list = pickle.load(u)
 
-            print('Flights saved: {}'.format(len(pickled_flights)))
+            print('Flights saved: {}'.format(len(flight_list)))
 
-
-            kbsize = sys.getsizeof(pickled_flights) / 1000
+            kbsize = sys.getsizeof(flight_list) / 1000
             kbsize = round(kbsize, 1)
-            print('Cached flight list size: {}kb.'.format(kbsize))
+            print('Saved flight list size: {}kb.'.format(kbsize))
 
-    def set_start_and_end_page(self, test=False):
+    def set_start_and_end_page(self, pkl_prefix='/scraper/source/'):
         '''
         Finds the start and end pages in the list of all scheduled
         flights.
         '''
-        if test:
-            pickle_name = 'scraper/tests/schiphol_{}.pickle'.format(
-                self.operation)
+        pkl_name = 'sch_base_{}.pickle'.format(self.operation)
+        pkl_path = settings.BASE_DIR + pkl_prefix + pkl_name
 
-        else:
-            pickle_name = 'scraper/source/schiphol_{}.pickle'.format(
-                self.operation)
-
-        with open(pickle_name, 'rb') as u:
+        with open(pkl_path, 'rb') as u:
                 flight_list = pickle.load(u)
 
         if flight_list:
