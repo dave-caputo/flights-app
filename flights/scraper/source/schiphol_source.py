@@ -26,7 +26,10 @@ class FormattedFlight(dict):
         # Key aligned with template and 'seconds' info sliced off.
         self['scheduleDatetime'] = self['scheduleDate'] + ' ' + self['scheduleTime']
         self['scheduledTimestamp'] = self['scheduleTime'][:-3]
-        self['flightNumber'] = self['flightName']
+
+        codeshares = 'Codeshares: ' + ", ".join(self['codeshares']['codeshares']) if self['codeshares'] else ''
+        self['flightNumber'] = '{}<p>{}</p>'.format(self['mainFlight'], codeshares)
+
         self['terminalId'] = self['terminal']
 
         city_codes = self['route']['destinations']
@@ -43,7 +46,7 @@ class FormattedFlight(dict):
         status = status[0] if len(status) > 0 else 'NAV'
 
         elt = self['estimatedLandingTime']
-        elt = elt[-11:13] if elt else self['scheduledTimestamp']
+        elt = elt[11:-13] if elt else self['scheduledTimestamp']
 
 
         alt = self['actualLandingTime']
@@ -153,9 +156,9 @@ class SchClient(object):
         # replace flight with FormattedFlight dict-like object and adds
         # page to item.
         for i, f in enumerate(flights):
-            formatted_flight = FormattedFlight(f).format_flight()
-            formatted_flight['page'] = page
-            flights[i] = formatted_flight
+            ff = FormattedFlight(f).format_flight()
+            ff['page'] = page
+            flights[i] = ff
 
         return flights
 
@@ -314,16 +317,22 @@ class FlightList(list):
                 if flight['id'] == updated_flight['id']:
                     self[i] = updated_flight
 
-    def format_flights(self):
-        for flight in self:
-            fflight = FormattedFlight(flight)
-            fflight.format_flight()
-            fflight.translate_flight_status()
-
-
-
 
 @format_to_data_table
+def format_to_render(flight_list, operation):
+
+    render_list = FlightList(op=operation)
+    render_list.dt = flight_list.dt
+
+    for f in flight_list:
+        if f['flightName'] == f['mainFlight'] and f['serviceType'] == "J":
+            render_list.append(f)
+
+    render_list.get_start_index()
+
+    return render_list
+
+
 def get_schiphol_flights(operation):
     flights = FlightList(op=operation)
     flights.set_file_path('base')
@@ -344,6 +353,6 @@ def get_schiphol_flights(operation):
         flights.get_from_API()
         flights.get_start_index()
         flights.save_to_file('base')
-    # flights.get_from_API()
-    # flights.save_to_file('base')
+
+    flights = format_to_render(flights, operation)
     return flights

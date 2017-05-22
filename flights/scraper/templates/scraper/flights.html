@@ -32,7 +32,10 @@
           <tr>
             <td class="scheduled">{{ flight.scheduledTimestamp }}</td>
             <td class="origin">{{ flight.city }}</td>
-            <td class="ident">{{ flight.flightNumber }}</a></td>
+            <td class="ident">
+              {% autoescape off %}
+                {{ flight.flightNumber }}</a></td>
+              {% endautoescape %}
             <td class="terminal">{{ flight.terminalId }}</td>
             <td class="flightstatus">{{ flight.flightOutputStatus }}</td>
           </tr>
