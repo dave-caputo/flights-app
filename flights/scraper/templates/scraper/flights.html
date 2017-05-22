@@ -1,14 +1,20 @@
 {% extends "home/home_page.html" %}
 
+{% load tz %}
 {% load data_extras %}
 {% load wagtailcore_tags %}
 
 {% block flight_type %}
   <h2><strong>{{ airport|title }} {{ operation|title }}</strong></h2>
   <a href="/"><p>Back</p></a>
+
+  <p>Last updated: {{ flights.data.dt|timezone:'Europe/Amsterdam' }} Local Amsterdam Time
+  </p>
 {% endblock %}
 
+
 {% block flights_list %}
+
     <table class="table table-striped table-bordered" id="flights_table" cellspacing="0" width="100%">
       <thead>
         <tr>
@@ -41,6 +47,7 @@
       "order": [],
       "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
       "pageLength": 50,
+      "displayStart": {{ flights.data.start_index }}
     });
   </script>
 {% endblock %}

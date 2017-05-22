@@ -62,4 +62,5 @@ class FlightsAjaxView(TemplateView):
         airport = self.kwargs['airport']
         operation = self.kwargs['operation']
         context['flights'] = g[airport](operation)
+        print('ajax request happened')
         return context

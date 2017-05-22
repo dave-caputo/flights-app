@@ -1,370 +1,349 @@
 from datetime import datetime, timedelta
-from operator import itemgetter
 import pickle
+import pytz
+import os
+import random
 import re
 import requests
 import sys
 
-import pytz
-
 from django.conf import settings
-from django.core.cache import cache
-
-from django.utils import timezone
-
+from scraper.source.utils import format_to_data_table, filter_flight_list
 from cities.models import City
-from cities.utils import SchipholCityManager
-from scraper.source.utils import format_to_data_table, merge_codeshare_flights
 
 
 
-class SchipholFlightManager:
-    '''
-    Provides methods to request flights from API and process data to
-    return template-friendly flights lists.
-    '''
 
-    def __init__(self, operation):
-        self.operation = operation.lower()
-        self.local_timezone = pytz.timezone('Europe/Amsterdam')
-        self.local_datetime = self.get_local_datetime()
-        self.time_limits = False
-        self.max_datetime = None
-        self.str_max_datetime = None
-        self.min_datetime = None
-        self.str_min_datetime = None
+class FormattedFlight(dict):
+
+    def format_flight(self):
+        self.add_items()
+        self.translate_status()
+        return self
+
+    def add_items(self):
+
+        # Key aligned with template and 'seconds' info sliced off.
+        self['scheduleDatetime'] = self['scheduleDate'] + ' ' + self['scheduleTime']
+        self['scheduledTimestamp'] = self['scheduleTime'][:-3]
+        self['flightNumber'] = self['flightName']
+        self['terminalId'] = self['terminal']
+
+        city_codes = self['route']['destinations']
+        for i, code in enumerate(city_codes):
+            try:
+                city_codes[i] = City.objects.get(iata=code).city
+            except:
+                continue
+        self['city'] = ", ".join(city_codes)
+
+
+    def translate_status(self):
+        status = self['publicFlightState']['flightStates']
+        status = status[0] if len(status) > 0 else 'NAV'
+
+        elt = self['estimatedLandingTime']
+        elt = elt[-11:13] if elt else self['scheduledTimestamp']
+
+
+        alt = self['actualLandingTime']
+        alt = alt[11:-13] if alt else self['scheduledTimestamp']
+
+        peobt = self['publicEstimatedOffBlockTime']
+        peobt = peobt[11:-13] if peobt else ''
+
+        aobt = self['actualOffBlockTime']
+        aobt = aobt[11:-13] if aobt else ''
+
+        status_codes = {
+            # Arrivals
+            'AIR': 'Expected {}'.format(elt),
+            'ARR': 'Arrived {}'.format(alt),
+            'EXP': 'Expected {}'.format(elt),
+            'FIB': 'Expected {}'.format(elt),
+            'FIR': 'Expected {}'.format(elt),
+            'LND': 'Landed {}'.format(alt),
+
+            # Departures
+            'BRD': 'Boarding - Departing {}'.format(peobt),
+            'DEL': 'Delayed {}'.format(peobt),
+            'DEP': 'Departed {}'.format(aobt),
+            'CNX': 'Cancelled',
+            'GCH': 'Gate changed - Departing {}'.format(peobt),
+            'GTO': 'Gate {} open - Departing {}'.format(self['gate'], peobt),
+            'GCL': 'Gate {} closing - Departing {}'.format(self['gate'], peobt),
+            'GTD': 'Gate closed - Departing {}'.format(peobt),
+            'SCH': 'Scheduled',
+            'TOM': 'Delayed tomorrow {}'.format(peobt),
+            'WIL': 'Wait in lounge. Departing {}'.format(peobt),
+
+            'NAV': 'Not available'
+        }
+
+        self['flightOutputStatus'] = status_codes.get(status)
+
+
+
+class SchClient(object):
+
+    def __init__(self, op=''):
         self.url = 'https://api.schiphol.nl/public-flights/flights'
         self.headers = {'resourceversion': 'v3'}
         self.params = {
             'app_id': '7e07d59a',
-            'app_key': settings.SCHIPHOL_KEY,
-            'includedelays': True,
+            'app_key': '144051ede9ab257ce820328c024c94dc',
+            'flightdirection': None,
+            'includedelays': False,
+            'page': 0,
             'scheduletime': None,
-            'sort': '+scheduleTime'  # No more filters available: API bug!
+            'sort': '+scheduleTime'  # No other filters available: API bug!
         }
         self.max_request_attempts = 30
+        self.operation = op
+        self.total_pages = None
+        self.get_total_pages()
+        print('Total pages: {}'.format(self.total_pages))
 
 
+    def make_request(self):
 
-    def get_local_datetime(self):
-        '''
-        Returns the local datetime based on the UTC time and the local
-        time zone provided on initialization.
-        '''
-        utc_datetime = timezone.now()
-        local_datetime = utc_datetime.astimezone(self.local_timezone)
-        return local_datetime
-
-
-    def set_time_limits(self, max_minutes=None, min_minutes=None):
-        '''
-        Sets the maximum and minimum time limits outside which flights
-        will not be retrieved.
-        '''
-        if max_minutes and min_minutes:
-            self.max_datetime = self.local_datetime + timedelta(minutes=max_minutes)
-            self.min_datetime = self.local_datetime - timedelta(minutes=min_minutes)
-
-            str_time = lambda x: datetime.strftime(x, '%H:%M')
-            self.str_max_datetime = str_time(self.max_datetime)
-            self.str_min_datetime = str_time(self.min_datetime)
-            print('Schiphol max time set to {}'.format(self.str_max_datetime))
-            print('Schiphol min time set to {}'.format(self.str_min_datetime))
-
-
-    def make_request(self, page=None):
-        '''
-        Makes a request to the Schiphol Airport API based on the
-        object's url, headers and params. Returns a response object.
-        '''
         attempt = 0
         valid_response = False
 
-        url = self.url
-        headers = self.headers
-        params = self.params
-
-        params['flightdirection'] = self.operation[0].upper()
-        params['page'] = page
-        if self.str_min_datetime:
-            params['scheduleTime'] = self.str_min_datetime
-
         while not valid_response:
-            response = requests.request("GET", url, headers=headers,
-                                        params=params)
-            print('Flights: Page: {}, Request status: {}'.format(page, response.status_code))
-            if response.status_code == 200:
+            response = requests.request("GET", self.url, headers=self.headers,
+                                        params=self.params)
+            print('Page {}: Request status: {}'.format(
+                self.params['page'], response.status_code))
+            if response.status_code == 200 or response.status_code == 204:
                 valid_response = True
             attempt += 1
             if attempt == self.max_request_attempts:
                 raise ConnectionError
-        print('Response returned. Attempts made: {}'.format(attempt))
+        print('Response obtained after {} attempt{}.'.format(
+            attempt, '' if attempt == 1 else 's'))
         return response
 
-
-    def get_scheduled_datetime(self, flight):
+    def get_total_pages(self):
         '''
-        Translate the scheduled time provided in response as a string,
-        to a datetime object.
-        '''
-        str_scheduled_time = flight['scheduleTime']
-        t = datetime.strptime(str_scheduled_time, '%H:%M:%S')
-        d = datetime.combine(self.local_datetime.date(), t.time())
-        scheduled_datetime = self.local_timezone.localize(d)
-
-        return scheduled_datetime
-
-
-    def get_city_name(self, flight):
-        '''
-        Matches the city code in the response to the city name, seeking
-        first in the database. If the city name is not found, it will
-        get it via make an API request and save the city name to the
-        database.
-        '''
-        print('Retrieving city name...')
-
-        mgr = SchipholCityManager()
-        print('City manager initialized...')
-
-        # Translate city code to city name.
-        route = flight['route']
-        city_code = route['destinations'][0]
-        try:
-            print('Finding match in db for {}...'.format(city_code))
-            city = City.objects.get(iata=city_code).city
-            print('Match found in db!: {}'.format(city))
-        except:
-            print('{} not found in db. Requesting via API...'.format(city_code))
-            city = mgr.get_and_save_city(iata=city_code)
-        return city
-
-
-    def update_flight_data(self, flight_list):
-        '''
-        For the flight list in the API response, transforms each field
-        for processing and displaying correctly the data in the
-        template.
-        '''
-        print('Updating data...')
-
-        updated_flight_list = []
-
-        for f in flight_list:
-
-            # Check flights are within time limits
-            if self.time_limits:
-                print('Time limits identified')
-                scheduled_datetime = self.get_scheduled_datetime(f)
-                if scheduled_datetime < self.min_time:
-                    continue
-                if scheduled_datetime > self.max_time:
-                    break
-            else:
-                print('No time limits identified')
-
-            # Consider only Passenger Line services
-            if f['serviceType'] != "J":
-                print('Service type {} ignored.'.format(f['serviceType']))
-                continue
-            else:
-                print('Found valid service type: {}'.format(f['serviceType']))
-
-            # Key aligned with template and 'seconds' info sliced off.
-            f['scheduledTimestamp'] = f.pop('scheduleTime')[:-3]
-
-            f['city'] = self.get_city_name(f)
-            print('City name successfully retrieved')
-
-            f['flightNumber'] = f.pop('flightName')
-            f['terminalId'] = f.pop('terminal', 'Not Available')
-
-            # Prepare data for translating status
-            if f['actualOffBlockTime']:
-                aobt = f['actualOffBlockTime'][11:-13]
-            else:
-                aobt = f['scheduledTimestamp']
-
-            if f['publicEstimatedOffBlockTime']:
-                peobt = f['publicEstimatedOffBlockTime'][11:-13]
-            else:
-                peobt = f['scheduledTimestamp']
-
-            if f['actualLandingTime']:
-                alt = f['actualLandingTime'][11:-13]
-            else:
-                alt = f['scheduledTimestamp']
-
-            if f['estimatedLandingTime']:
-                elt = f['estimatedLandingTime'][11:-13]
-            else:
-                elt = f['scheduledTimestamp']
-
-            # Translate status.
-            status = f.pop('publicFlightState')
-            status = status['flightStates'][0]
-            status_list = {
-                # Arrivals
-                'AIR': 'Expected {}'.format(elt),
-                'ARR': 'Arrived {}'.format(alt),
-                'EXP': 'Expected {}'.format(elt),
-                'FIB': 'Expected {}'.format(elt),
-                'FIR': 'Expected {}'.format(elt),
-                'LND': 'Landed {}'.format(alt),
-
-                # Departures
-                'BRD': 'Boarding - Departing {}'.format(peobt),
-                'DEL': 'Delayed {}'.format(peobt),
-                'DEP': 'Departed {}'.format(aobt),
-                'CNX': 'Cancelled',
-                'GCH': 'Gate changed - Departing {}'.format(peobt),
-                'GTO': 'Gate {} open - Departing {}'.format(f['gate'], peobt),
-                'GCL': 'Gate {} closing - Departing {}'.format(f['gate'], peobt),
-                'GTD': 'Gate closed - Departing {}'.format(peobt),
-                'SCH': 'Scheduled',
-                'TOM': 'Delayed tomorrow {}'.format(peobt),
-                'WIL': 'Wait in lounge. Departing {}'.format(peobt),
-            }
-
-            f['flightOutputStatus'] = status_list.get(status, status)
-
-            updated_flight_list.append(f)
-
-        return updated_flight_list
-
-
-    def get_page_count(self):
-        '''
-        Makes an API request to obtain from the headers the page count.
+        Gets the total number of pages available for request for the
+        operation.
         '''
 
+        print('Getting total pages...')
+        self.params['flightdirection'] = self.operation[0] if self.operation else None
         response = self.make_request()
-
-        # Obtain from headers and cache the number of pages
         link = response.headers['Link']
-        str_page_count = re.findall(r'(?<=page\=)\d+', link)[0]
-        page_count = int(str_page_count)
-        print('Page count for {}: {}'.format(self.operation, page_count))
+        self.total_pages = int(re.findall(r'(?<=page\=)\d+', link)[0])
+        return self.total_pages
 
-        return page_count
-
-
-    @format_to_data_table
-    @merge_codeshare_flights
-    def get_flights(self):
+    def request_flights_in_page(self, page=0):
         '''
-        Returns a template-friendly sorted flight list to display in
-        carousel or full list views.
+        Requests flights in a given page and replaces items retrieved
+        with a FormattedFlight object for added functionality. Adds page
+        item to the flight.
         '''
 
-        self.set_time_limits(max_minutes=120, min_minutes=60)
+        # request flights
+        self.params['flightdirection'] = self.operation[0] if self.operation else None
+        self.params['page'] = page
+        response = self.make_request()
+        flights = response.json()['flights']
 
-        flight_list = []
-        page_count = self.get_page_count()
-        print('Schiphol total page count: {}'.format(page_count))
+        # replace flight with FormattedFlight dict-like object and adds
+        # page to item.
+        for i, f in enumerate(flights):
+            formatted_flight = FormattedFlight(f).format_flight()
+            formatted_flight['page'] = page
+            flights[i] = formatted_flight
 
-        for page in range(0, page_count + 1):
-            response = self.make_request(page=page)
-            data = response.json()
-            data = data['flights']
-            print('Data obtained for page {}'.format(page))
-
-            # For each flight align keys and values with template.
-            flights = self.update_flight_data(data)
-
-            if flights and flights[-1] == "Max_time_exceeded":
-                break
-
-            flight_list += flights
-
-        return sorted(flight_list, key=itemgetter('scheduledTimestamp', 'city'))
+        return flights
 
 
-    def get_and_save_flight_data(self, pkl_prefix='/scraper/source/',
-                                 page_count=None, action='sch_base',
-                                 test=False):
-        '''
-        Requests and caches all flights scheduled for a given day.
-        Actions:
-        * 'sch_base': Saves a list of all flights as received from API.
-        * 'sch_update': Saves a list of flights within a specified range of
-          pages.
-        * 'live': Saves a template-friendly list which merges the base
-          and update lists.
-
-        '''
-        pkl_name = '{}_{}.pickle'.format(action, self.operation)
-        pkl_path = settings.BASE_DIR + pkl_prefix + pkl_name
-
-        if not page_count:
-            page_count = self.get_page_count()
+    def request_flights_in_page_range(self, start_page, end_page):
 
         all_flights = []
-
-        if action == 'update':
-            start_page = self.start_page
-            end_page = self.end_page
-        else:
-            start_page = 0
-            end_page = page_count
-
         for page in range(start_page, end_page + 1):
-            response = self.make_request(page=page)
+            flights = self.request_flights_in_page(page=page)
+            all_flights += flights
 
-            data = response.json()['flights']
-            print('Data obtained for page {}'.format(page))
+        return all_flights
 
-            for entry in data:
-                entry['page'] = page
 
-            all_flights += data
 
-            with open(pkl_path, 'wb') as p:
-                pickle.dump(all_flights, p)
+class DtMgr:
 
-            with open(pkl_path, 'rb') as u:
-                flight_list = pickle.load(u)
+    def __init__(self):
+        self.utc_dt = datetime.now(tz=pytz.UTC)
+        self.ams_tz = pytz.timezone('Europe/Amsterdam')
+        self.ams_dt = self.utc_dt.astimezone(self.ams_tz)
 
-            print('Flights saved: {}'.format(len(flight_list)))
+    def set_time_limits(self, min_minutes=60, max_minutes=120):
+        if max_minutes and min_minutes:
+            limits = {}
 
-            kbsize = sys.getsizeof(flight_list) / 1000
+            limits['max_dt'] = self.ams_dt + timedelta(minutes=max_minutes)
+            limits['min_dt'] = self.ams_dt - timedelta(minutes=min_minutes)
+
+            str_dt = lambda x: datetime.strftime(x, '%Y-%m-%d %H:%M:%S')
+
+            limits['str_max_dt'] = str_dt(limits['max_dt'])
+            limits['str_min_dt'] = str_dt(limits['min_dt'])
+
+            return limits
+
+
+    def convert_to_ams_tz(self, dt):
+        return dt.astimezone(self.ams_tz)
+
+
+
+
+class FlightList(list):
+
+
+    def __init__(self, *args, op='', **kwargs):
+        super().__init__(*args, **kwargs)
+        self.operation = op
+        self.pkl_path = None
+        self.dt = None
+        self.start_index = None
+
+
+    def set_file_path(self, action):
+        dt = DtMgr()
+        ams_dt = dt.ams_dt.strftime('%y%m%d')
+        pkl_name = 'sch_{}_{}_{}.pickle'.format(action, self.operation, ams_dt)
+        self.pkl_path = settings.BASE_DIR + '/scraper/source/files/' + pkl_name
+
+
+    def save_to_file(self, action):
+        flights = {'flist': self, 'flist_dt': self.dt}
+        self.set_file_path(action)
+        with open(self.pkl_path, 'w'):
+            pass  # Clears file contents
+        with open(self.pkl_path, 'wb') as pkl:
+            pickle.dump(flights, pkl)
+        print('Schiphol: Flight list saved to file.')
+
+
+    def get_file_size(self):
+        if os.path.isfile(self.pkl_path):
+            kbsize = sys.getsizeof(self.pkl_path) / 1000
             kbsize = round(kbsize, 1)
-            print('Saved flight list size: {}kb.'.format(kbsize))
+            return kbsize
+        print('No file was found.')
 
-    def set_start_and_end_page(self, pkl_prefix='/scraper/source/'):
+
+    def load_from_file(self, action):
+        self.set_file_path(action)
+        with open(self.pkl_path, 'rb') as pkl:
+            flights = pickle.load(pkl)
+            self.extend(flights['flist'])
+            self.dt = flights['flist_dt']
+        print('Schiphol: Flight list loaded from file.')
+
+
+    def get_from_API(self, start_page=0, end_page=None):
         '''
-        Finds the start and end pages in the list of all scheduled
-        flights.
+        Makes a request using a SchClient instance and adds items to the
+        FlightList if no start/end pages are provided. Otherwise, it
+        only returns the flights from the page range.
         '''
-        pkl_name = 'sch_base_{}.pickle'.format(self.operation)
-        pkl_path = settings.BASE_DIR + pkl_prefix + pkl_name
 
-        with open(pkl_path, 'rb') as u:
-                flight_list = pickle.load(u)
+        # Request flights from API.
+        r = SchClient(self.operation)
+        end_page = end_page if end_page else r.total_pages
 
-        if flight_list:
-            for item in flight_list:
-                if item['scheduleTime'][:-3] >= self.str_min_datetime:
-                    self.start_page = item['page']
-                    break
+        flights = r.request_flights_in_page_range(start_page, end_page)
 
-            for item in reversed(flight_list):
-                if item['scheduleTime'][:-3] <= self.str_max_datetime:
-                    self.end_page = item['page']
-                    break
-        print('Schiphol {} request start page: {}'.format(
-            self.operation, self.start_page))
-        print('Schiphol {} request end page: {}'.format(
-            self.operation, self.end_page))
+        # Set a timedate for the FlightList.
+        self.dt = DtMgr().ams_dt.replace(microsecond=0)
+        print('FlightList datetime set at: {}'.format(self.dt))
+
+        # If page range is given self will not be updated.
+        if start_page and end_page:
+            return flights
+        else:
+            # First, delete any items in the FlightList if any.
+            for item in self:
+                del item
+
+            # Add all items retrieved from API.
+            self.extend(flights)
+
+
+    def get_page_range(self, start_dt, end_dt):
+        for item in self:
+            if start_dt <= item['scheduleDatetime'][:-3]:
+                start = item['page']
+                print('Start page dt: {}'.format(item['scheduleDatetime'][:-3]))
+                break
+        for item in reversed(self):
+            if end_dt >= item['scheduleDatetime'][:-3]:
+                end = item['page']
+                print('End page dt: {}'.format(item['scheduleDatetime'][:-3]))
+                break
+
+        return start, end
+
+
+    def get_start_index(self):
+        for index, item in enumerate(self):
+            current_dt = datetime.strftime(DtMgr().ams_dt, '%Y-%m-%d %H:%M:%S')
+            if item['scheduleDatetime'] >= current_dt:
+                self.start_index = index
+                return index
+
+
+    def update_list(self):
+        '''
+        Makes API request for a range of pages based on the set timelimits,
+        and replaces items in the FlightList instance with the updated ones.
+        '''
+
+        dt = DtMgr()
+        lmts = dt.set_time_limits()
+        start_page, end_page = self.get_page_range(lmts['str_min_dt'], lmts['str_max_dt'])
+        print('Page range obtained:\n'
+              '> Start page: {}.\n'
+              '> End page:{}.'.format(start_page, end_page))
+        updated_flights = self.get_from_API(start_page=start_page, end_page=end_page)
+        for i, flight in enumerate(self):
+            for updated_flight in updated_flights:
+                if flight['id'] == updated_flight['id']:
+                    self[i] = updated_flight
+
+    def format_flights(self):
+        for flight in self:
+            fflight = FormattedFlight(flight)
+            fflight.format_flight()
+            fflight.translate_flight_status()
 
 
 
+
+@format_to_data_table
 def get_schiphol_flights(operation):
-    '''
-    Instantiates a SchipolFlightManager object specifying the operation
-    and whether the data should be customised for displaying in a
-    carousel.
-    '''
-    m = SchipholFlightManager(operation)
-    flights = m.get_flights()
+    flights = FlightList(op=operation)
+    flights.set_file_path('base')
+    if os.path.isfile(flights.pkl_path):
+        flights.load_from_file('base')
+        flights.get_start_index()
+
+        dt = DtMgr()
+        fdt = dt.convert_to_ams_tz(flights.dt + timedelta(minutes=5))
+        print('Next refresh: {}'.format(fdt))
+        print('Current time: {}'.format(dt.ams_dt))
+        print('Start index set at: {}'.format(flights.start_index))
+
+        if dt.ams_dt > fdt:
+            flights.update_list()
+            flights.save_to_file('base')
+    else:
+        flights.get_from_API()
+        flights.get_start_index()
+        flights.save_to_file('base')
+    # flights.get_from_API()
+    # flights.save_to_file('base')
     return flights
