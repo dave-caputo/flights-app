@@ -71,12 +71,11 @@
             <a href="{% url 'scraper:flights' airport='gatwick' operation='departures' %}">Departures</a>
           </small>
         </h3>
-        <h3>Amsterdam Schiphol
-          <small>
-            <a href="{% url 'scraper:flights' airport='schiphol' operation='arrivals' %}">Arrivals</a> |
-            <a href="{% url 'scraper:flights' airport='schiphol' operation='departures' %}">Departures</a>
-          </small>
-        </h3>
+        <h3>Amsterdam Schiphol</h3>
+        <h2>
+          <a href="{% ul 'scraper:flights' airport='schiphol' operation='arrivals' %}">Arrivals</a> |
+          <a href="{% url 'scraper:flights' airport='schiphol' operation='departures' %}">Departures</a>
+        </h2>
 
 
       {% endblock %}
